@@ -390,17 +390,13 @@ const
   GLFW_DONT_CARE = -1;
   MA_VERSION_MAJOR = 0;
   MA_VERSION_MINOR = 11;
-  MA_VERSION_REVISION = 2;
+  MA_VERSION_REVISION = 4;
   MA_SIZEOF_PTR = 8;
   MA_TRUE = 1;
   MA_FALSE = 0;
   SIZE_MAX = $ffffffffffffffff;
   MA_SIZE_MAX = SIZE_MAX;
   MA_SIMD_ALIGNMENT = 32;
-  MA_LOG_LEVEL_DEBUG = 4;
-  MA_LOG_LEVEL_INFO = 3;
-  MA_LOG_LEVEL_WARNING = 2;
-  MA_LOG_LEVEL_ERROR = 1;
   MA_MIN_CHANNELS = 1;
   MA_MAX_CHANNELS = 254;
   MA_MAX_FILTER_ORDER = 8;
@@ -467,6 +463,10 @@ const
   APPEND_STATUS_CREATE = (0);
   APPEND_STATUS_CREATEAFTER = (1);
   APPEND_STATUS_ADDINZIP = (2);
+  MA_LOG_LEVEL_DEBUG = 4;
+  MA_LOG_LEVEL_INFO = 3;
+  MA_LOG_LEVEL_WARNING = 2;
+  MA_LOG_LEVEL_ERROR = 1;
   MA_CHANNEL_NONE = 0;
   MA_CHANNEL_MONO = 1;
   MA_CHANNEL_FRONT_LEFT = 2;
@@ -672,6 +672,20 @@ const
   ma_data_converter_execution_path_resample_only = 3;
   ma_data_converter_execution_path_resample_first = 4;
   ma_data_converter_execution_path_channels_first = 5;
+  MA_JOB_TYPE_QUIT = 0;
+  MA_JOB_TYPE_CUSTOM = 1;
+  MA_JOB_TYPE_RESOURCE_MANAGER_LOAD_DATA_BUFFER_NODE = 2;
+  MA_JOB_TYPE_RESOURCE_MANAGER_FREE_DATA_BUFFER_NODE = 3;
+  MA_JOB_TYPE_RESOURCE_MANAGER_PAGE_DATA_BUFFER_NODE = 4;
+  MA_JOB_TYPE_RESOURCE_MANAGER_LOAD_DATA_BUFFER = 5;
+  MA_JOB_TYPE_RESOURCE_MANAGER_FREE_DATA_BUFFER = 6;
+  MA_JOB_TYPE_RESOURCE_MANAGER_LOAD_DATA_STREAM = 7;
+  MA_JOB_TYPE_RESOURCE_MANAGER_FREE_DATA_STREAM = 8;
+  MA_JOB_TYPE_RESOURCE_MANAGER_PAGE_DATA_STREAM = 9;
+  MA_JOB_TYPE_RESOURCE_MANAGER_SEEK_DATA_STREAM = 10;
+  MA_JOB_TYPE_DEVICE_AAUDIO_REROUTE = 11;
+  MA_JOB_TYPE_COUNT = 12;
+  MA_JOB_QUEUE_FLAG_NON_BLOCKING = 1;
   ma_device_state_uninitialized = 0;
   ma_device_state_stopped = 1;
   ma_device_state_started = 2;
@@ -781,18 +795,6 @@ const
   MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE = 2;
   MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC = 4;
   MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_WAIT_INIT = 8;
-  MA_RESOURCE_MANAGER_JOB_QUIT = 0;
-  MA_RESOURCE_MANAGER_JOB_LOAD_DATA_BUFFER_NODE = 1;
-  MA_RESOURCE_MANAGER_JOB_FREE_DATA_BUFFER_NODE = 2;
-  MA_RESOURCE_MANAGER_JOB_PAGE_DATA_BUFFER_NODE = 3;
-  MA_RESOURCE_MANAGER_JOB_LOAD_DATA_BUFFER = 4;
-  MA_RESOURCE_MANAGER_JOB_FREE_DATA_BUFFER = 5;
-  MA_RESOURCE_MANAGER_JOB_LOAD_DATA_STREAM = 6;
-  MA_RESOURCE_MANAGER_JOB_FREE_DATA_STREAM = 7;
-  MA_RESOURCE_MANAGER_JOB_PAGE_DATA_STREAM = 8;
-  MA_RESOURCE_MANAGER_JOB_SEEK_DATA_STREAM = 9;
-  MA_RESOURCE_MANAGER_JOB_CUSTOM = 256;
-  MA_RESOURCE_MANAGER_JOB_QUEUE_FLAG_NON_BLOCKING = 1;
   MA_RESOURCE_MANAGER_FLAG_NON_BLOCKING = 1;
   MA_RESOURCE_MANAGER_FLAG_NO_THREADING = 2;
   ma_resource_manager_data_supply_type_unknown = 0;
@@ -803,6 +805,7 @@ const
   MA_NODE_FLAG_CONTINUOUS_PROCESSING = 2;
   MA_NODE_FLAG_ALLOW_NULL_INPUT = 4;
   MA_NODE_FLAG_DIFFERENT_PROCESSING_RATES = 8;
+  MA_NODE_FLAG_SILENT_OUTPUT = 16;
   ma_node_state_started = 0;
   ma_node_state_stopped = 1;
   MA_SOUND_FLAG_STREAM = 1;
@@ -1251,6 +1254,12 @@ const
 
 type
 
+  { ma_log_level  }
+  ma_log_level = Integer;
+
+  { Pma_log_level  }
+  Pma_log_level = ^ma_log_level;
+
   { _ma_channel_position  }
   _ma_channel_position = Integer;
 
@@ -1365,6 +1374,18 @@ type
   { Pma_data_converter_execution_path  }
   Pma_data_converter_execution_path = ^ma_data_converter_execution_path;
 
+  { ma_job_type  }
+  ma_job_type = Integer;
+
+  { Pma_job_type  }
+  Pma_job_type = ^ma_job_type;
+
+  { ma_job_queue_flags  }
+  ma_job_queue_flags = Integer;
+
+  { Pma_job_queue_flags  }
+  Pma_job_queue_flags = ^ma_job_queue_flags;
+
   { ma_device_state  }
   ma_device_state = Integer;
 
@@ -1472,18 +1493,6 @@ type
 
   { Pma_resource_manager_data_source_flags  }
   Pma_resource_manager_data_source_flags = ^ma_resource_manager_data_source_flags;
-
-  { ma_resource_manager_job_type  }
-  ma_resource_manager_job_type = Integer;
-
-  { Pma_resource_manager_job_type  }
-  Pma_resource_manager_job_type = ^ma_resource_manager_job_type;
-
-  { ma_resource_manager_job_queue_flags  }
-  ma_resource_manager_job_queue_flags = Integer;
-
-  { Pma_resource_manager_job_queue_flags  }
-  Pma_resource_manager_job_queue_flags = ^ma_resource_manager_job_queue_flags;
 
   { ma_resource_manager_flags  }
   ma_resource_manager_flags = Integer;
@@ -2134,8 +2143,44 @@ type
   { Pma_duplex_rb  }
   Pma_duplex_rb = ^ma_duplex_rb;
 
+  { Pma_fence  }
+  Pma_fence = ^ma_fence;
+
+  { Pma_async_notification_callbacks  }
+  Pma_async_notification_callbacks = ^ma_async_notification_callbacks;
+
+  { Pma_async_notification_poll  }
+  Pma_async_notification_poll = ^ma_async_notification_poll;
+
+  { Pma_async_notification_event  }
+  Pma_async_notification_event = ^ma_async_notification_event;
+
+  { Pma_slot_allocator_config  }
+  Pma_slot_allocator_config = ^ma_slot_allocator_config;
+
+  { Pma_slot_allocator_group  }
+  Pma_slot_allocator_group = ^ma_slot_allocator_group;
+
+  { Pma_slot_allocator  }
+  Pma_slot_allocator = ^ma_slot_allocator;
+
+  { Pma_job  }
+  Pma_job = ^ma_job;
+
+  { Pma_job_queue_config  }
+  Pma_job_queue_config = ^ma_job_queue_config;
+
+  { Pma_job_queue  }
+  Pma_job_queue = ^ma_job_queue;
+
   { Pma_IMMNotificationClient  }
   Pma_IMMNotificationClient = ^ma_IMMNotificationClient;
+
+  { Pma_device_job_thread_config  }
+  Pma_device_job_thread_config = ^ma_device_job_thread_config;
+
+  { Pma_device_job_thread  }
+  Pma_device_job_thread = ^ma_device_job_thread;
 
   { Pma_device_notification  }
   Pma_device_notification = ^ma_device_notification;
@@ -2166,27 +2211,6 @@ type
 
   { Pma_device  }
   Pma_device = ^ma_device;
-
-  { Pma_fence  }
-  Pma_fence = ^ma_fence;
-
-  { Pma_async_notification_callbacks  }
-  Pma_async_notification_callbacks = ^ma_async_notification_callbacks;
-
-  { Pma_async_notification_poll  }
-  Pma_async_notification_poll = ^ma_async_notification_poll;
-
-  { Pma_async_notification_event  }
-  Pma_async_notification_event = ^ma_async_notification_event;
-
-  { Pma_slot_allocator_config  }
-  Pma_slot_allocator_config = ^ma_slot_allocator_config;
-
-  { Pma_slot_allocator_group  }
-  Pma_slot_allocator_group = ^ma_slot_allocator_group;
-
-  { Pma_slot_allocator  }
-  Pma_slot_allocator = ^ma_slot_allocator;
 
   { Pma_data_source_vtable  }
   Pma_data_source_vtable = ^ma_data_source_vtable;
@@ -2271,15 +2295,6 @@ type
 
   { Pma_resource_manager_pipeline_notifications  }
   Pma_resource_manager_pipeline_notifications = ^ma_resource_manager_pipeline_notifications;
-
-  { Pma_resource_manager_job  }
-  Pma_resource_manager_job = ^ma_resource_manager_job;
-
-  { Pma_resource_manager_job_queue_config  }
-  Pma_resource_manager_job_queue_config = ^ma_resource_manager_job_queue_config;
-
-  { Pma_resource_manager_job_queue  }
-  Pma_resource_manager_job_queue = ^ma_resource_manager_job_queue;
 
   { Pma_resource_manager_data_source_config  }
   Pma_resource_manager_data_source_config = ^ma_resource_manager_data_source_config;
@@ -3496,7 +3511,23 @@ type
 
   { ma_spatializer  }
   ma_spatializer = record
-    config: ma_spatializer_config;
+    channelsIn: ma_uint32;
+    channelsOut: ma_uint32;
+    pChannelMapIn: Pma_channel;
+    attenuationModel: ma_attenuation_model;
+    positioning: ma_positioning;
+    handedness: ma_handedness;
+    minGain: Single;
+    maxGain: Single;
+    minDistance: Single;
+    maxDistance: Single;
+    rolloff: Single;
+    coneInnerAngleInRadians: Single;
+    coneOuterAngleInRadians: Single;
+    coneOuterGain: Single;
+    dopplerFactor: Single;
+    directionalAttenuationFactor: Single;
+    gainSmoothTimeInFrames: ma_uint32;
     position: ma_vec3f;
     direction: ma_vec3f;
     velocity: ma_vec3f;
@@ -3712,726 +3743,6 @@ type
     rb: ma_pcm_rb;
   end;
 
-  { ma_IMMNotificationClient  }
-  ma_IMMNotificationClient = record
-    lpVtbl: Pointer;
-    counter: ma_uint32;
-    pDevice: Pma_device;
-  end;
-
-  { _anonymous_type_17  }
-  _anonymous_type_17 = record
-    _unused: Integer;
-  end;
-
-  { P_anonymous_type_17  }
-  P_anonymous_type_17 = ^_anonymous_type_17;
-
-  { _anonymous_type_18  }
-  _anonymous_type_18 = record
-    _unused: Integer;
-  end;
-
-  { P_anonymous_type_18  }
-  P_anonymous_type_18 = ^_anonymous_type_18;
-
-  { _anonymous_type_19  }
-  _anonymous_type_19 = record
-    _unused: Integer;
-  end;
-
-  { P_anonymous_type_19  }
-  P_anonymous_type_19 = ^_anonymous_type_19;
-
-  { _anonymous_type_20  }
-  _anonymous_type_20 = record
-    _unused: Integer;
-  end;
-
-  { P_anonymous_type_20  }
-  P_anonymous_type_20 = ^_anonymous_type_20;
-
-  { _anonymous_type_21  }
-  _anonymous_type_21 = record
-    case Integer of
-      0: (started: _anonymous_type_17);
-      1: (stopped: _anonymous_type_18);
-      2: (rerouted: _anonymous_type_19);
-      3: (interruption: _anonymous_type_20);
-  end;
-
-  { P_anonymous_type_21  }
-  P_anonymous_type_21 = ^_anonymous_type_21;
-
-  { ma_device_notification  }
-  ma_device_notification = record
-    pDevice: Pma_device;
-    _type: ma_device_notification_type;
-    data: _anonymous_type_21;
-  end;
-
-  { ma_device_notification_proc  }
-  ma_device_notification_proc = procedure(const pNotification: Pma_device_notification); cdecl;
-
-  { ma_device_data_proc  }
-  ma_device_data_proc = procedure(pDevice: Pma_device; pOutput: Pointer; const pInput: Pointer; frameCount: ma_uint32); cdecl;
-
-  { ma_stop_proc  }
-  ma_stop_proc = procedure(pDevice: Pma_device); cdecl;
-
-  { ma_timer  }
-  ma_timer = record
-    case Integer of
-      0: (counter: ma_int64);
-      1: (counterD: Double);
-  end;
-
-  { _anonymous_type_22  }
-  _anonymous_type_22 = record
-    case Integer of
-      0: (i: Integer);
-      1: (s: array [0..255] of UTF8Char);
-      2: (p: Pointer);
-  end;
-
-  { P_anonymous_type_22  }
-  P_anonymous_type_22 = ^_anonymous_type_22;
-
-  { Pma_device_id  }
-  Pma_device_id = ^ma_device_id;
-
-  { ma_device_id  }
-  ma_device_id = record
-    case Integer of
-      0: (wasapi: array [0..63] of WideChar);
-      1: (dsound: array [0..15] of ma_uint8);
-      2: (winmm: ma_uint32);
-      3: (alsa: array [0..255] of UTF8Char);
-      4: (pulse: array [0..255] of UTF8Char);
-      5: (jack: Integer);
-      6: (coreaudio: array [0..255] of UTF8Char);
-      7: (sndio: array [0..255] of UTF8Char);
-      8: (audio4: array [0..255] of UTF8Char);
-      9: (oss: array [0..63] of UTF8Char);
-      10: (aaudio: ma_int32);
-      11: (opensl: ma_uint32);
-      12: (webaudio: array [0..31] of UTF8Char);
-      13: (custom: _anonymous_type_22);
-      14: (nullbackend: Integer);
-  end;
-
-  { _anonymous_type_23  }
-  _anonymous_type_23 = record
-    format: ma_format;
-    channels: ma_uint32;
-    sampleRate: ma_uint32;
-    flags: ma_uint32;
-  end;
-
-  { P_anonymous_type_23  }
-  P_anonymous_type_23 = ^_anonymous_type_23;
-
-  { ma_device_info  }
-  ma_device_info = record
-    id: ma_device_id;
-    name: array [0..255] of UTF8Char;
-    isDefault: ma_bool32;
-    nativeDataFormatCount: ma_uint32;
-    nativeDataFormats: array [0..63] of _anonymous_type_23;
-  end;
-
-  { _anonymous_type_24  }
-  _anonymous_type_24 = record
-    pDeviceID: Pma_device_id;
-    format: ma_format;
-    channels: ma_uint32;
-    pChannelMap: Pma_channel;
-    channelMixMode: ma_channel_mix_mode;
-    shareMode: ma_share_mode;
-  end;
-
-  { P_anonymous_type_24  }
-  P_anonymous_type_24 = ^_anonymous_type_24;
-
-  { _anonymous_type_25  }
-  _anonymous_type_25 = record
-    pDeviceID: Pma_device_id;
-    format: ma_format;
-    channels: ma_uint32;
-    pChannelMap: Pma_channel;
-    channelMixMode: ma_channel_mix_mode;
-    shareMode: ma_share_mode;
-  end;
-
-  { P_anonymous_type_25  }
-  P_anonymous_type_25 = ^_anonymous_type_25;
-
-  { _anonymous_type_26  }
-  _anonymous_type_26 = record
-    noAutoConvertSRC: ma_bool8;
-    noDefaultQualitySRC: ma_bool8;
-    noAutoStreamRouting: ma_bool8;
-    noHardwareOffloading: ma_bool8;
-  end;
-
-  { P_anonymous_type_26  }
-  P_anonymous_type_26 = ^_anonymous_type_26;
-
-  { _anonymous_type_27  }
-  _anonymous_type_27 = record
-    noMMap: ma_bool32;
-    noAutoFormat: ma_bool32;
-    noAutoChannels: ma_bool32;
-    noAutoResample: ma_bool32;
-  end;
-
-  { P_anonymous_type_27  }
-  P_anonymous_type_27 = ^_anonymous_type_27;
-
-  { _anonymous_type_28  }
-  _anonymous_type_28 = record
-    pStreamNamePlayback: PUTF8Char;
-    pStreamNameCapture: PUTF8Char;
-  end;
-
-  { P_anonymous_type_28  }
-  P_anonymous_type_28 = ^_anonymous_type_28;
-
-  { _anonymous_type_29  }
-  _anonymous_type_29 = record
-    allowNominalSampleRateChange: ma_bool32;
-  end;
-
-  { P_anonymous_type_29  }
-  P_anonymous_type_29 = ^_anonymous_type_29;
-
-  { _anonymous_type_30  }
-  _anonymous_type_30 = record
-    streamType: ma_opensl_stream_type;
-    recordingPreset: ma_opensl_recording_preset;
-  end;
-
-  { P_anonymous_type_30  }
-  P_anonymous_type_30 = ^_anonymous_type_30;
-
-  { _anonymous_type_31  }
-  _anonymous_type_31 = record
-    usage: ma_aaudio_usage;
-    contentType: ma_aaudio_content_type;
-    inputPreset: ma_aaudio_input_preset;
-  end;
-
-  { P_anonymous_type_31  }
-  P_anonymous_type_31 = ^_anonymous_type_31;
-
-  { ma_device_config  }
-  ma_device_config = record
-    deviceType: ma_device_type;
-    sampleRate: ma_uint32;
-    periodSizeInFrames: ma_uint32;
-    periodSizeInMilliseconds: ma_uint32;
-    periods: ma_uint32;
-    performanceProfile: ma_performance_profile;
-    noPreSilencedOutputBuffer: ma_bool8;
-    noClip: ma_bool8;
-    noDisableDenormals: ma_bool8;
-    dataCallback: ma_device_data_proc;
-    notificationCallback: ma_device_notification_proc;
-    stopCallback: ma_stop_proc;
-    pUserData: Pointer;
-    resampling: ma_resampler_config;
-    playback: _anonymous_type_24;
-    capture: _anonymous_type_25;
-    wasapi: _anonymous_type_26;
-    alsa: _anonymous_type_27;
-    pulse: _anonymous_type_28;
-    coreaudio: _anonymous_type_29;
-    opensl: _anonymous_type_30;
-    aaudio: _anonymous_type_31;
-  end;
-
-  { ma_enum_devices_callback_proc  }
-  ma_enum_devices_callback_proc = function(pContext: Pma_context; deviceType: ma_device_type; const pInfo: Pma_device_info; pUserData: Pointer): ma_bool32; cdecl;
-
-  { ma_device_descriptor  }
-  ma_device_descriptor = record
-    pDeviceID: Pma_device_id;
-    shareMode: ma_share_mode;
-    format: ma_format;
-    channels: ma_uint32;
-    sampleRate: ma_uint32;
-    channelMap: array [0..253] of ma_channel;
-    periodSizeInFrames: ma_uint32;
-    periodSizeInMilliseconds: ma_uint32;
-    periodCount: ma_uint32;
-  end;
-
-  { ma_backend_callbacks  }
-  ma_backend_callbacks = record
-    onContextInit: function(pContext: Pma_context; const pConfig: Pma_context_config; pCallbacks: Pma_backend_callbacks): ma_result; cdecl;
-    onContextUninit: function(pContext: Pma_context): ma_result; cdecl;
-    onContextEnumerateDevices: function(pContext: Pma_context; callback: ma_enum_devices_callback_proc; pUserData: Pointer): ma_result; cdecl;
-    onContextGetDeviceInfo: function(pContext: Pma_context; deviceType: ma_device_type; const pDeviceID: Pma_device_id; pDeviceInfo: Pma_device_info): ma_result; cdecl;
-    onDeviceInit: function(pDevice: Pma_device; const pConfig: Pma_device_config; pDescriptorPlayback: Pma_device_descriptor; pDescriptorCapture: Pma_device_descriptor): ma_result; cdecl;
-    onDeviceUninit: function(pDevice: Pma_device): ma_result; cdecl;
-    onDeviceStart: function(pDevice: Pma_device): ma_result; cdecl;
-    onDeviceStop: function(pDevice: Pma_device): ma_result; cdecl;
-    onDeviceRead: function(pDevice: Pma_device; pFrames: Pointer; frameCount: ma_uint32; pFramesRead: Pma_uint32): ma_result; cdecl;
-    onDeviceWrite: function(pDevice: Pma_device; const pFrames: Pointer; frameCount: ma_uint32; pFramesWritten: Pma_uint32): ma_result; cdecl;
-    onDeviceDataLoop: function(pDevice: Pma_device): ma_result; cdecl;
-    onDeviceDataLoopWakeup: function(pDevice: Pma_device): ma_result; cdecl;
-    onDeviceGetInfo: function(pDevice: Pma_device; _type: ma_device_type; pDeviceInfo: Pma_device_info): ma_result; cdecl;
-  end;
-
-  { _anonymous_type_32  }
-  _anonymous_type_32 = record
-    useVerboseDeviceEnumeration: ma_bool32;
-  end;
-
-  { P_anonymous_type_32  }
-  P_anonymous_type_32 = ^_anonymous_type_32;
-
-  { _anonymous_type_33  }
-  _anonymous_type_33 = record
-    pApplicationName: PUTF8Char;
-    pServerName: PUTF8Char;
-    tryAutoSpawn: ma_bool32;
-  end;
-
-  { P_anonymous_type_33  }
-  P_anonymous_type_33 = ^_anonymous_type_33;
-
-  { _anonymous_type_34  }
-  _anonymous_type_34 = record
-    sessionCategory: ma_ios_session_category;
-    sessionCategoryOptions: ma_uint32;
-    noAudioSessionActivate: ma_bool32;
-    noAudioSessionDeactivate: ma_bool32;
-  end;
-
-  { P_anonymous_type_34  }
-  P_anonymous_type_34 = ^_anonymous_type_34;
-
-  { _anonymous_type_35  }
-  _anonymous_type_35 = record
-    pClientName: PUTF8Char;
-    tryStartServer: ma_bool32;
-  end;
-
-  { P_anonymous_type_35  }
-  P_anonymous_type_35 = ^_anonymous_type_35;
-
-  { ma_context_config  }
-  ma_context_config = record
-    pLog: Pma_log;
-    threadPriority: ma_thread_priority;
-    threadStackSize: NativeUInt;
-    pUserData: Pointer;
-    allocationCallbacks: ma_allocation_callbacks;
-    alsa: _anonymous_type_32;
-    pulse: _anonymous_type_33;
-    coreaudio: _anonymous_type_34;
-    jack: _anonymous_type_35;
-    custom: ma_backend_callbacks;
-  end;
-
-  { _anonymous_type_36  }
-  _anonymous_type_36 = record
-    _unused: Integer;
-  end;
-
-  { P_anonymous_type_36  }
-  P_anonymous_type_36 = ^_anonymous_type_36;
-
-  { _anonymous_type_37  }
-  _anonymous_type_37 = record
-    deviceType: ma_device_type;
-    pAudioClient: Pointer;
-    ppAudioClientService: PPointer;
-    pResult: Pma_result;
-  end;
-
-  { P_anonymous_type_37  }
-  P_anonymous_type_37 = ^_anonymous_type_37;
-
-  { _anonymous_type_38  }
-  _anonymous_type_38 = record
-    pDevice: Pma_device;
-    deviceType: ma_device_type;
-  end;
-
-  { P_anonymous_type_38  }
-  P_anonymous_type_38 = ^_anonymous_type_38;
-
-  { _anonymous_type_39  }
-  _anonymous_type_39 = record
-    case Integer of
-      0: (quit: _anonymous_type_36);
-      1: (createAudioClient: _anonymous_type_37);
-      2: (releaseAudioClient: _anonymous_type_38);
-  end;
-
-  { P_anonymous_type_39  }
-  P_anonymous_type_39 = ^_anonymous_type_39;
-
-  { ma_context_command__wasapi  }
-  ma_context_command__wasapi = record
-    code: Integer;
-    pEvent: Pma_event;
-    data: _anonymous_type_39;
-  end;
-
-  { _anonymous_type_40  }
-  _anonymous_type_40 = record
-    commandThread: ma_thread;
-    commandLock: ma_mutex;
-    commandSem: ma_semaphore;
-    commandIndex: ma_uint32;
-    commandCount: ma_uint32;
-    commands: array [0..3] of ma_context_command__wasapi;
-  end;
-
-  { P_anonymous_type_40  }
-  P_anonymous_type_40 = ^_anonymous_type_40;
-
-  { _anonymous_type_41  }
-  _anonymous_type_41 = record
-    hDSoundDLL: ma_handle;
-    DirectSoundCreate: ma_proc;
-    DirectSoundEnumerateA: ma_proc;
-    DirectSoundCaptureCreate: ma_proc;
-    DirectSoundCaptureEnumerateA: ma_proc;
-  end;
-
-  { P_anonymous_type_41  }
-  P_anonymous_type_41 = ^_anonymous_type_41;
-
-  { _anonymous_type_42  }
-  _anonymous_type_42 = record
-    hWinMM: ma_handle;
-    waveOutGetNumDevs: ma_proc;
-    waveOutGetDevCapsA: ma_proc;
-    waveOutOpen: ma_proc;
-    waveOutClose: ma_proc;
-    waveOutPrepareHeader: ma_proc;
-    waveOutUnprepareHeader: ma_proc;
-    waveOutWrite: ma_proc;
-    waveOutReset: ma_proc;
-    waveInGetNumDevs: ma_proc;
-    waveInGetDevCapsA: ma_proc;
-    waveInOpen: ma_proc;
-    waveInClose: ma_proc;
-    waveInPrepareHeader: ma_proc;
-    waveInUnprepareHeader: ma_proc;
-    waveInAddBuffer: ma_proc;
-    waveInStart: ma_proc;
-    waveInReset: ma_proc;
-  end;
-
-  { P_anonymous_type_42  }
-  P_anonymous_type_42 = ^_anonymous_type_42;
-
-  { _anonymous_type_43  }
-  _anonymous_type_43 = record
-    jackSO: ma_handle;
-    jack_client_open: ma_proc;
-    jack_client_close: ma_proc;
-    jack_client_name_size: ma_proc;
-    jack_set_process_callback: ma_proc;
-    jack_set_buffer_size_callback: ma_proc;
-    jack_on_shutdown: ma_proc;
-    jack_get_sample_rate: ma_proc;
-    jack_get_buffer_size: ma_proc;
-    jack_get_ports: ma_proc;
-    jack_activate: ma_proc;
-    jack_deactivate: ma_proc;
-    jack_connect: ma_proc;
-    jack_port_register: ma_proc;
-    jack_port_name: ma_proc;
-    jack_port_get_buffer: ma_proc;
-    jack_free: ma_proc;
-    pClientName: PUTF8Char;
-    tryStartServer: ma_bool32;
-  end;
-
-  { P_anonymous_type_43  }
-  P_anonymous_type_43 = ^_anonymous_type_43;
-
-  { _anonymous_type_44  }
-  _anonymous_type_44 = record
-    _unused: Integer;
-  end;
-
-  { P_anonymous_type_44  }
-  P_anonymous_type_44 = ^_anonymous_type_44;
-
-  { _anonymous_type_45  }
-  _anonymous_type_45 = record
-    case Integer of
-      0: (wasapi: _anonymous_type_40);
-      1: (dsound: _anonymous_type_41);
-      2: (winmm: _anonymous_type_42);
-      3: (jack: _anonymous_type_43);
-      4: (null_backend: _anonymous_type_44);
-  end;
-
-  { P_anonymous_type_45  }
-  P_anonymous_type_45 = ^_anonymous_type_45;
-
-  { _anonymous_type_46  }
-  _anonymous_type_46 = record
-    hOle32DLL: ma_handle;
-    CoInitializeEx: ma_proc;
-    CoUninitialize: ma_proc;
-    CoCreateInstance: ma_proc;
-    CoTaskMemFree: ma_proc;
-    PropVariantClear: ma_proc;
-    StringFromGUID2: ma_proc;
-    hUser32DLL: ma_handle;
-    GetForegroundWindow: ma_proc;
-    GetDesktopWindow: ma_proc;
-    hAdvapi32DLL: ma_handle;
-    RegOpenKeyExA: ma_proc;
-    RegCloseKey: ma_proc;
-    RegQueryValueExA: ma_proc;
-  end;
-
-  { P_anonymous_type_46  }
-  P_anonymous_type_46 = ^_anonymous_type_46;
-
-  { _anonymous_type_47  }
-  _anonymous_type_47 = record
-    case Integer of
-      0: (win32: _anonymous_type_46);
-      1: (_unused: Integer);
-  end;
-
-  { P_anonymous_type_47  }
-  P_anonymous_type_47 = ^_anonymous_type_47;
-
-  { ma_context  }
-  ma_context = record
-    callbacks: ma_backend_callbacks;
-    backend: ma_backend;
-    pLog: Pma_log;
-    log: ma_log;
-    threadPriority: ma_thread_priority;
-    threadStackSize: NativeUInt;
-    pUserData: Pointer;
-    allocationCallbacks: ma_allocation_callbacks;
-    deviceEnumLock: ma_mutex;
-    deviceInfoLock: ma_mutex;
-    deviceInfoCapacity: ma_uint32;
-    playbackDeviceInfoCount: ma_uint32;
-    captureDeviceInfoCount: ma_uint32;
-    pDeviceInfos: Pma_device_info;
-    f15: _anonymous_type_45;
-    f16: _anonymous_type_47;
-  end;
-
-  { _anonymous_type_48  }
-  _anonymous_type_48 = record
-    lpfOrder: ma_uint32;
-  end;
-
-  { P_anonymous_type_48  }
-  P_anonymous_type_48 = ^_anonymous_type_48;
-
-  { _anonymous_type_49  }
-  _anonymous_type_49 = record
-    algorithm: ma_resample_algorithm;
-    pBackendVTable: Pma_resampling_backend_vtable;
-    pBackendUserData: Pointer;
-    linear: _anonymous_type_48;
-  end;
-
-  { P_anonymous_type_49  }
-  P_anonymous_type_49 = ^_anonymous_type_49;
-
-  { _anonymous_type_50  }
-  _anonymous_type_50 = record
-    id: ma_device_id;
-    name: array [0..255] of UTF8Char;
-    shareMode: ma_share_mode;
-    format: ma_format;
-    channels: ma_uint32;
-    channelMap: array [0..253] of ma_channel;
-    internalFormat: ma_format;
-    internalChannels: ma_uint32;
-    internalSampleRate: ma_uint32;
-    internalChannelMap: array [0..253] of ma_channel;
-    internalPeriodSizeInFrames: ma_uint32;
-    internalPeriods: ma_uint32;
-    channelMixMode: ma_channel_mix_mode;
-    converter: ma_data_converter;
-    pInputCache: Pointer;
-    inputCacheCap: ma_uint64;
-    inputCacheConsumed: ma_uint64;
-    inputCacheRemaining: ma_uint64;
-  end;
-
-  { P_anonymous_type_50  }
-  P_anonymous_type_50 = ^_anonymous_type_50;
-
-  { _anonymous_type_51  }
-  _anonymous_type_51 = record
-    id: ma_device_id;
-    name: array [0..255] of UTF8Char;
-    shareMode: ma_share_mode;
-    format: ma_format;
-    channels: ma_uint32;
-    channelMap: array [0..253] of ma_channel;
-    internalFormat: ma_format;
-    internalChannels: ma_uint32;
-    internalSampleRate: ma_uint32;
-    internalChannelMap: array [0..253] of ma_channel;
-    internalPeriodSizeInFrames: ma_uint32;
-    internalPeriods: ma_uint32;
-    channelMixMode: ma_channel_mix_mode;
-    converter: ma_data_converter;
-  end;
-
-  { P_anonymous_type_51  }
-  P_anonymous_type_51 = ^_anonymous_type_51;
-
-  { _anonymous_type_52  }
-  _anonymous_type_52 = record
-    pAudioClientPlayback: ma_ptr;
-    pAudioClientCapture: ma_ptr;
-    pRenderClient: ma_ptr;
-    pCaptureClient: ma_ptr;
-    pDeviceEnumerator: ma_ptr;
-    notificationClient: ma_IMMNotificationClient;
-    hEventPlayback: ma_handle;
-    hEventCapture: ma_handle;
-    actualPeriodSizeInFramesPlayback: ma_uint32;
-    actualPeriodSizeInFramesCapture: ma_uint32;
-    originalPeriodSizeInFrames: ma_uint32;
-    originalPeriodSizeInMilliseconds: ma_uint32;
-    originalPeriods: ma_uint32;
-    originalPerformanceProfile: ma_performance_profile;
-    periodSizeInFramesPlayback: ma_uint32;
-    periodSizeInFramesCapture: ma_uint32;
-    isStartedCapture: ma_bool32;
-    isStartedPlayback: ma_bool32;
-    noAutoConvertSRC: ma_bool8;
-    noDefaultQualitySRC: ma_bool8;
-    noHardwareOffloading: ma_bool8;
-    allowCaptureAutoStreamRouting: ma_bool8;
-    allowPlaybackAutoStreamRouting: ma_bool8;
-    isDetachedPlayback: ma_bool8;
-    isDetachedCapture: ma_bool8;
-  end;
-
-  { P_anonymous_type_52  }
-  P_anonymous_type_52 = ^_anonymous_type_52;
-
-  { _anonymous_type_53  }
-  _anonymous_type_53 = record
-    pPlayback: ma_ptr;
-    pPlaybackPrimaryBuffer: ma_ptr;
-    pPlaybackBuffer: ma_ptr;
-    pCapture: ma_ptr;
-    pCaptureBuffer: ma_ptr;
-  end;
-
-  { P_anonymous_type_53  }
-  P_anonymous_type_53 = ^_anonymous_type_53;
-
-  { _anonymous_type_54  }
-  _anonymous_type_54 = record
-    hDevicePlayback: ma_handle;
-    hDeviceCapture: ma_handle;
-    hEventPlayback: ma_handle;
-    hEventCapture: ma_handle;
-    fragmentSizeInFrames: ma_uint32;
-    iNextHeaderPlayback: ma_uint32;
-    iNextHeaderCapture: ma_uint32;
-    headerFramesConsumedPlayback: ma_uint32;
-    headerFramesConsumedCapture: ma_uint32;
-    pWAVEHDRPlayback: Pma_uint8;
-    pWAVEHDRCapture: Pma_uint8;
-    pIntermediaryBufferPlayback: Pma_uint8;
-    pIntermediaryBufferCapture: Pma_uint8;
-    _pHeapData: Pma_uint8;
-  end;
-
-  { P_anonymous_type_54  }
-  P_anonymous_type_54 = ^_anonymous_type_54;
-
-  { _anonymous_type_55  }
-  _anonymous_type_55 = record
-    pClient: ma_ptr;
-    ppPortsPlayback: Pma_ptr;
-    ppPortsCapture: Pma_ptr;
-    pIntermediaryBufferPlayback: PSingle;
-    pIntermediaryBufferCapture: PSingle;
-  end;
-
-  { P_anonymous_type_55  }
-  P_anonymous_type_55 = ^_anonymous_type_55;
-
-  { _anonymous_type_56  }
-  _anonymous_type_56 = record
-    deviceThread: ma_thread;
-    operationEvent: ma_event;
-    operationCompletionEvent: ma_event;
-    operationSemaphore: ma_semaphore;
-    operation: ma_uint32;
-    operationResult: ma_result;
-    timer: ma_timer;
-    priorRunTime: Double;
-    currentPeriodFramesRemainingPlayback: ma_uint32;
-    currentPeriodFramesRemainingCapture: ma_uint32;
-    lastProcessedFramePlayback: ma_uint64;
-    lastProcessedFrameCapture: ma_uint64;
-    isStarted: ma_bool32;
-  end;
-
-  { P_anonymous_type_56  }
-  P_anonymous_type_56 = ^_anonymous_type_56;
-
-  { _anonymous_type_57  }
-  _anonymous_type_57 = record
-    case Integer of
-      0: (wasapi: _anonymous_type_52);
-      1: (dsound: _anonymous_type_53);
-      2: (winmm: _anonymous_type_54);
-      3: (jack: _anonymous_type_55);
-      4: (null_device: _anonymous_type_56);
-  end;
-
-  { P_anonymous_type_57  }
-  P_anonymous_type_57 = ^_anonymous_type_57;
-
-  { ma_device  }
-  ma_device = record
-    pContext: Pma_context;
-    _type: ma_device_type;
-    sampleRate: ma_uint32;
-    state: ma_device_state;
-    onData: ma_device_data_proc;
-    onNotification: ma_device_notification_proc;
-    onStop: ma_stop_proc;
-    pUserData: Pointer;
-    startStopLock: ma_mutex;
-    wakeupEvent: ma_event;
-    startEvent: ma_event;
-    stopEvent: ma_event;
-    thread: ma_thread;
-    workResult: ma_result;
-    isOwnerOfContext: ma_bool8;
-    noPreSilencedOutputBuffer: ma_bool8;
-    noClip: ma_bool8;
-    noDisableDenormals: ma_bool8;
-    masterVolumeFactor: Single;
-    duplexRB: ma_duplex_rb;
-    resampling: _anonymous_type_49;
-    playback: _anonymous_type_50;
-    capture: _anonymous_type_51;
-    f24: _anonymous_type_57;
-  end;
-
   { ma_fence  }
   ma_fence = record
     e: ma_event;
@@ -4479,6 +3790,969 @@ type
     capacity: ma_uint32;
     _ownsHeap: ma_bool32;
     _pHeap: Pointer;
+  end;
+
+  { ma_job_proc  }
+  ma_job_proc = function(pJob: Pma_job): ma_result; cdecl;
+
+  { _anonymous_type_17  }
+  _anonymous_type_17 = record
+    code: ma_uint16;
+    slot: ma_uint16;
+    refcount: ma_uint32;
+  end;
+
+  { P_anonymous_type_17  }
+  P_anonymous_type_17 = ^_anonymous_type_17;
+
+  { _anonymous_type_18  }
+  _anonymous_type_18 = record
+    case Integer of
+      0: (breakup: _anonymous_type_17);
+      1: (allocation: ma_uint64);
+  end;
+
+  { P_anonymous_type_18  }
+  P_anonymous_type_18 = ^_anonymous_type_18;
+
+  { _anonymous_type_19  }
+  _anonymous_type_19 = record
+    proc: ma_job_proc;
+    data0: ma_uintptr;
+    data1: ma_uintptr;
+  end;
+
+  { P_anonymous_type_19  }
+  P_anonymous_type_19 = ^_anonymous_type_19;
+
+  { _anonymous_type_20  }
+  _anonymous_type_20 = record
+    pResourceManager: Pointer;
+    pDataBufferNode: Pointer;
+    pFilePath: PUTF8Char;
+    pFilePathW: PWideChar;
+    decode: ma_bool32;
+    pInitNotification: Pma_async_notification;
+    pDoneNotification: Pma_async_notification;
+    pInitFence: Pma_fence;
+    pDoneFence: Pma_fence;
+  end;
+
+  { P_anonymous_type_20  }
+  P_anonymous_type_20 = ^_anonymous_type_20;
+
+  { _anonymous_type_21  }
+  _anonymous_type_21 = record
+    pResourceManager: Pointer;
+    pDataBufferNode: Pointer;
+    pDoneNotification: Pma_async_notification;
+    pDoneFence: Pma_fence;
+  end;
+
+  { P_anonymous_type_21  }
+  P_anonymous_type_21 = ^_anonymous_type_21;
+
+  { _anonymous_type_22  }
+  _anonymous_type_22 = record
+    pResourceManager: Pointer;
+    pDataBufferNode: Pointer;
+    pDecoder: Pointer;
+    pDoneNotification: Pma_async_notification;
+    pDoneFence: Pma_fence;
+  end;
+
+  { P_anonymous_type_22  }
+  P_anonymous_type_22 = ^_anonymous_type_22;
+
+  { _anonymous_type_23  }
+  _anonymous_type_23 = record
+    pDataBuffer: Pointer;
+    pInitNotification: Pma_async_notification;
+    pDoneNotification: Pma_async_notification;
+    pInitFence: Pma_fence;
+    pDoneFence: Pma_fence;
+  end;
+
+  { P_anonymous_type_23  }
+  P_anonymous_type_23 = ^_anonymous_type_23;
+
+  { _anonymous_type_24  }
+  _anonymous_type_24 = record
+    pDataBuffer: Pointer;
+    pDoneNotification: Pma_async_notification;
+    pDoneFence: Pma_fence;
+  end;
+
+  { P_anonymous_type_24  }
+  P_anonymous_type_24 = ^_anonymous_type_24;
+
+  { _anonymous_type_25  }
+  _anonymous_type_25 = record
+    pDataStream: Pointer;
+    pFilePath: PUTF8Char;
+    pFilePathW: PWideChar;
+    initialSeekPoint: ma_uint64;
+    pInitNotification: Pma_async_notification;
+    pInitFence: Pma_fence;
+  end;
+
+  { P_anonymous_type_25  }
+  P_anonymous_type_25 = ^_anonymous_type_25;
+
+  { _anonymous_type_26  }
+  _anonymous_type_26 = record
+    pDataStream: Pointer;
+    pDoneNotification: Pma_async_notification;
+    pDoneFence: Pma_fence;
+  end;
+
+  { P_anonymous_type_26  }
+  P_anonymous_type_26 = ^_anonymous_type_26;
+
+  { _anonymous_type_27  }
+  _anonymous_type_27 = record
+    pDataStream: Pointer;
+    pageIndex: ma_uint32;
+  end;
+
+  { P_anonymous_type_27  }
+  P_anonymous_type_27 = ^_anonymous_type_27;
+
+  { _anonymous_type_28  }
+  _anonymous_type_28 = record
+    pDataStream: Pointer;
+    frameIndex: ma_uint64;
+  end;
+
+  { P_anonymous_type_28  }
+  P_anonymous_type_28 = ^_anonymous_type_28;
+
+  { _anonymous_type_29  }
+  _anonymous_type_29 = record
+    case Integer of
+      0: (loadDataBufferNode: _anonymous_type_20);
+      1: (freeDataBufferNode: _anonymous_type_21);
+      2: (pageDataBufferNode: _anonymous_type_22);
+      3: (loadDataBuffer: _anonymous_type_23);
+      4: (freeDataBuffer: _anonymous_type_24);
+      5: (loadDataStream: _anonymous_type_25);
+      6: (freeDataStream: _anonymous_type_26);
+      7: (pageDataStream: _anonymous_type_27);
+      8: (seekDataStream: _anonymous_type_28);
+  end;
+
+  { P_anonymous_type_29  }
+  P_anonymous_type_29 = ^_anonymous_type_29;
+
+  { _anonymous_type_30  }
+  _anonymous_type_30 = record
+    pDevice: Pointer;
+    deviceType: ma_uint32;
+  end;
+
+  { P_anonymous_type_30  }
+  P_anonymous_type_30 = ^_anonymous_type_30;
+
+  { _anonymous_type_31  }
+  _anonymous_type_31 = record
+    case Integer of
+      0: (reroute: _anonymous_type_30);
+  end;
+
+  { P_anonymous_type_31  }
+  P_anonymous_type_31 = ^_anonymous_type_31;
+
+  { _anonymous_type_32  }
+  _anonymous_type_32 = record
+    case Integer of
+      0: (aaudio: _anonymous_type_31);
+  end;
+
+  { P_anonymous_type_32  }
+  P_anonymous_type_32 = ^_anonymous_type_32;
+
+  { _anonymous_type_33  }
+  _anonymous_type_33 = record
+    case Integer of
+      0: (custom: _anonymous_type_19);
+      1: (resourceManager: _anonymous_type_29);
+      2: (device: _anonymous_type_32);
+  end;
+
+  { P_anonymous_type_33  }
+  P_anonymous_type_33 = ^_anonymous_type_33;
+
+  { ma_job  }
+  ma_job = record
+    toc: _anonymous_type_18;
+    next: ma_uint64;
+    order: ma_uint32;
+    data: _anonymous_type_33;
+  end;
+
+  { ma_job_queue_config  }
+  ma_job_queue_config = record
+    flags: ma_uint32;
+    capacity: ma_uint32;
+  end;
+
+  { ma_job_queue  }
+  ma_job_queue = record
+    flags: ma_uint32;
+    capacity: ma_uint32;
+    head: ma_uint64;
+    tail: ma_uint64;
+    sem: ma_semaphore;
+    allocator: ma_slot_allocator;
+    pJobs: Pma_job;
+    lock: ma_spinlock;
+    _pHeap: Pointer;
+    _ownsHeap: ma_bool32;
+  end;
+
+  { ma_IMMNotificationClient  }
+  ma_IMMNotificationClient = record
+    lpVtbl: Pointer;
+    counter: ma_uint32;
+    pDevice: Pma_device;
+  end;
+
+  { ma_device_job_thread_config  }
+  ma_device_job_thread_config = record
+    noThread: ma_bool32;
+    jobQueueCapacity: ma_uint32;
+    jobQueueFlags: ma_uint32;
+  end;
+
+  { ma_device_job_thread  }
+  ma_device_job_thread = record
+    thread: ma_thread;
+    jobQueue: ma_job_queue;
+    _hasThread: ma_bool32;
+  end;
+
+  { _anonymous_type_34  }
+  _anonymous_type_34 = record
+    _unused: Integer;
+  end;
+
+  { P_anonymous_type_34  }
+  P_anonymous_type_34 = ^_anonymous_type_34;
+
+  { _anonymous_type_35  }
+  _anonymous_type_35 = record
+    _unused: Integer;
+  end;
+
+  { P_anonymous_type_35  }
+  P_anonymous_type_35 = ^_anonymous_type_35;
+
+  { _anonymous_type_36  }
+  _anonymous_type_36 = record
+    _unused: Integer;
+  end;
+
+  { P_anonymous_type_36  }
+  P_anonymous_type_36 = ^_anonymous_type_36;
+
+  { _anonymous_type_37  }
+  _anonymous_type_37 = record
+    _unused: Integer;
+  end;
+
+  { P_anonymous_type_37  }
+  P_anonymous_type_37 = ^_anonymous_type_37;
+
+  { _anonymous_type_38  }
+  _anonymous_type_38 = record
+    case Integer of
+      0: (started: _anonymous_type_34);
+      1: (stopped: _anonymous_type_35);
+      2: (rerouted: _anonymous_type_36);
+      3: (interruption: _anonymous_type_37);
+  end;
+
+  { P_anonymous_type_38  }
+  P_anonymous_type_38 = ^_anonymous_type_38;
+
+  { ma_device_notification  }
+  ma_device_notification = record
+    pDevice: Pma_device;
+    _type: ma_device_notification_type;
+    data: _anonymous_type_38;
+  end;
+
+  { ma_device_notification_proc  }
+  ma_device_notification_proc = procedure(const pNotification: Pma_device_notification); cdecl;
+
+  { ma_device_data_proc  }
+  ma_device_data_proc = procedure(pDevice: Pma_device; pOutput: Pointer; const pInput: Pointer; frameCount: ma_uint32); cdecl;
+
+  { ma_stop_proc  }
+  ma_stop_proc = procedure(pDevice: Pma_device); cdecl;
+
+  { ma_timer  }
+  ma_timer = record
+    case Integer of
+      0: (counter: ma_int64);
+      1: (counterD: Double);
+  end;
+
+  { _anonymous_type_39  }
+  _anonymous_type_39 = record
+    case Integer of
+      0: (i: Integer);
+      1: (s: array [0..255] of UTF8Char);
+      2: (p: Pointer);
+  end;
+
+  { P_anonymous_type_39  }
+  P_anonymous_type_39 = ^_anonymous_type_39;
+
+  { Pma_device_id  }
+  Pma_device_id = ^ma_device_id;
+
+  { ma_device_id  }
+  ma_device_id = record
+    case Integer of
+      0: (wasapi: array [0..63] of WideChar);
+      1: (dsound: array [0..15] of ma_uint8);
+      2: (winmm: ma_uint32);
+      3: (alsa: array [0..255] of UTF8Char);
+      4: (pulse: array [0..255] of UTF8Char);
+      5: (jack: Integer);
+      6: (coreaudio: array [0..255] of UTF8Char);
+      7: (sndio: array [0..255] of UTF8Char);
+      8: (audio4: array [0..255] of UTF8Char);
+      9: (oss: array [0..63] of UTF8Char);
+      10: (aaudio: ma_int32);
+      11: (opensl: ma_uint32);
+      12: (webaudio: array [0..31] of UTF8Char);
+      13: (custom: _anonymous_type_39);
+      14: (nullbackend: Integer);
+  end;
+
+  { _anonymous_type_40  }
+  _anonymous_type_40 = record
+    format: ma_format;
+    channels: ma_uint32;
+    sampleRate: ma_uint32;
+    flags: ma_uint32;
+  end;
+
+  { P_anonymous_type_40  }
+  P_anonymous_type_40 = ^_anonymous_type_40;
+
+  { ma_device_info  }
+  ma_device_info = record
+    id: ma_device_id;
+    name: array [0..255] of UTF8Char;
+    isDefault: ma_bool32;
+    nativeDataFormatCount: ma_uint32;
+    nativeDataFormats: array [0..63] of _anonymous_type_40;
+  end;
+
+  { _anonymous_type_41  }
+  _anonymous_type_41 = record
+    pDeviceID: Pma_device_id;
+    format: ma_format;
+    channels: ma_uint32;
+    pChannelMap: Pma_channel;
+    channelMixMode: ma_channel_mix_mode;
+    shareMode: ma_share_mode;
+  end;
+
+  { P_anonymous_type_41  }
+  P_anonymous_type_41 = ^_anonymous_type_41;
+
+  { _anonymous_type_42  }
+  _anonymous_type_42 = record
+    pDeviceID: Pma_device_id;
+    format: ma_format;
+    channels: ma_uint32;
+    pChannelMap: Pma_channel;
+    channelMixMode: ma_channel_mix_mode;
+    shareMode: ma_share_mode;
+  end;
+
+  { P_anonymous_type_42  }
+  P_anonymous_type_42 = ^_anonymous_type_42;
+
+  { _anonymous_type_43  }
+  _anonymous_type_43 = record
+    noAutoConvertSRC: ma_bool8;
+    noDefaultQualitySRC: ma_bool8;
+    noAutoStreamRouting: ma_bool8;
+    noHardwareOffloading: ma_bool8;
+  end;
+
+  { P_anonymous_type_43  }
+  P_anonymous_type_43 = ^_anonymous_type_43;
+
+  { _anonymous_type_44  }
+  _anonymous_type_44 = record
+    noMMap: ma_bool32;
+    noAutoFormat: ma_bool32;
+    noAutoChannels: ma_bool32;
+    noAutoResample: ma_bool32;
+  end;
+
+  { P_anonymous_type_44  }
+  P_anonymous_type_44 = ^_anonymous_type_44;
+
+  { _anonymous_type_45  }
+  _anonymous_type_45 = record
+    pStreamNamePlayback: PUTF8Char;
+    pStreamNameCapture: PUTF8Char;
+  end;
+
+  { P_anonymous_type_45  }
+  P_anonymous_type_45 = ^_anonymous_type_45;
+
+  { _anonymous_type_46  }
+  _anonymous_type_46 = record
+    allowNominalSampleRateChange: ma_bool32;
+  end;
+
+  { P_anonymous_type_46  }
+  P_anonymous_type_46 = ^_anonymous_type_46;
+
+  { _anonymous_type_47  }
+  _anonymous_type_47 = record
+    streamType: ma_opensl_stream_type;
+    recordingPreset: ma_opensl_recording_preset;
+  end;
+
+  { P_anonymous_type_47  }
+  P_anonymous_type_47 = ^_anonymous_type_47;
+
+  { _anonymous_type_48  }
+  _anonymous_type_48 = record
+    usage: ma_aaudio_usage;
+    contentType: ma_aaudio_content_type;
+    inputPreset: ma_aaudio_input_preset;
+    noAutoStartAfterReroute: ma_bool32;
+  end;
+
+  { P_anonymous_type_48  }
+  P_anonymous_type_48 = ^_anonymous_type_48;
+
+  { ma_device_config  }
+  ma_device_config = record
+    deviceType: ma_device_type;
+    sampleRate: ma_uint32;
+    periodSizeInFrames: ma_uint32;
+    periodSizeInMilliseconds: ma_uint32;
+    periods: ma_uint32;
+    performanceProfile: ma_performance_profile;
+    noPreSilencedOutputBuffer: ma_bool8;
+    noClip: ma_bool8;
+    noDisableDenormals: ma_bool8;
+    noFixedSizedCallback: ma_bool8;
+    dataCallback: ma_device_data_proc;
+    notificationCallback: ma_device_notification_proc;
+    stopCallback: ma_stop_proc;
+    pUserData: Pointer;
+    resampling: ma_resampler_config;
+    playback: _anonymous_type_41;
+    capture: _anonymous_type_42;
+    wasapi: _anonymous_type_43;
+    alsa: _anonymous_type_44;
+    pulse: _anonymous_type_45;
+    coreaudio: _anonymous_type_46;
+    opensl: _anonymous_type_47;
+    aaudio: _anonymous_type_48;
+  end;
+
+  { ma_enum_devices_callback_proc  }
+  ma_enum_devices_callback_proc = function(pContext: Pma_context; deviceType: ma_device_type; const pInfo: Pma_device_info; pUserData: Pointer): ma_bool32; cdecl;
+
+  { ma_device_descriptor  }
+  ma_device_descriptor = record
+    pDeviceID: Pma_device_id;
+    shareMode: ma_share_mode;
+    format: ma_format;
+    channels: ma_uint32;
+    sampleRate: ma_uint32;
+    channelMap: array [0..253] of ma_channel;
+    periodSizeInFrames: ma_uint32;
+    periodSizeInMilliseconds: ma_uint32;
+    periodCount: ma_uint32;
+  end;
+
+  { ma_backend_callbacks  }
+  ma_backend_callbacks = record
+    onContextInit: function(pContext: Pma_context; const pConfig: Pma_context_config; pCallbacks: Pma_backend_callbacks): ma_result; cdecl;
+    onContextUninit: function(pContext: Pma_context): ma_result; cdecl;
+    onContextEnumerateDevices: function(pContext: Pma_context; callback: ma_enum_devices_callback_proc; pUserData: Pointer): ma_result; cdecl;
+    onContextGetDeviceInfo: function(pContext: Pma_context; deviceType: ma_device_type; const pDeviceID: Pma_device_id; pDeviceInfo: Pma_device_info): ma_result; cdecl;
+    onDeviceInit: function(pDevice: Pma_device; const pConfig: Pma_device_config; pDescriptorPlayback: Pma_device_descriptor; pDescriptorCapture: Pma_device_descriptor): ma_result; cdecl;
+    onDeviceUninit: function(pDevice: Pma_device): ma_result; cdecl;
+    onDeviceStart: function(pDevice: Pma_device): ma_result; cdecl;
+    onDeviceStop: function(pDevice: Pma_device): ma_result; cdecl;
+    onDeviceRead: function(pDevice: Pma_device; pFrames: Pointer; frameCount: ma_uint32; pFramesRead: Pma_uint32): ma_result; cdecl;
+    onDeviceWrite: function(pDevice: Pma_device; const pFrames: Pointer; frameCount: ma_uint32; pFramesWritten: Pma_uint32): ma_result; cdecl;
+    onDeviceDataLoop: function(pDevice: Pma_device): ma_result; cdecl;
+    onDeviceDataLoopWakeup: function(pDevice: Pma_device): ma_result; cdecl;
+    onDeviceGetInfo: function(pDevice: Pma_device; _type: ma_device_type; pDeviceInfo: Pma_device_info): ma_result; cdecl;
+  end;
+
+  { _anonymous_type_49  }
+  _anonymous_type_49 = record
+    useVerboseDeviceEnumeration: ma_bool32;
+  end;
+
+  { P_anonymous_type_49  }
+  P_anonymous_type_49 = ^_anonymous_type_49;
+
+  { _anonymous_type_50  }
+  _anonymous_type_50 = record
+    pApplicationName: PUTF8Char;
+    pServerName: PUTF8Char;
+    tryAutoSpawn: ma_bool32;
+  end;
+
+  { P_anonymous_type_50  }
+  P_anonymous_type_50 = ^_anonymous_type_50;
+
+  { _anonymous_type_51  }
+  _anonymous_type_51 = record
+    sessionCategory: ma_ios_session_category;
+    sessionCategoryOptions: ma_uint32;
+    noAudioSessionActivate: ma_bool32;
+    noAudioSessionDeactivate: ma_bool32;
+  end;
+
+  { P_anonymous_type_51  }
+  P_anonymous_type_51 = ^_anonymous_type_51;
+
+  { _anonymous_type_52  }
+  _anonymous_type_52 = record
+    pClientName: PUTF8Char;
+    tryStartServer: ma_bool32;
+  end;
+
+  { P_anonymous_type_52  }
+  P_anonymous_type_52 = ^_anonymous_type_52;
+
+  { ma_context_config  }
+  ma_context_config = record
+    pLog: Pma_log;
+    threadPriority: ma_thread_priority;
+    threadStackSize: NativeUInt;
+    pUserData: Pointer;
+    allocationCallbacks: ma_allocation_callbacks;
+    alsa: _anonymous_type_49;
+    pulse: _anonymous_type_50;
+    coreaudio: _anonymous_type_51;
+    jack: _anonymous_type_52;
+    custom: ma_backend_callbacks;
+  end;
+
+  { _anonymous_type_53  }
+  _anonymous_type_53 = record
+    _unused: Integer;
+  end;
+
+  { P_anonymous_type_53  }
+  P_anonymous_type_53 = ^_anonymous_type_53;
+
+  { _anonymous_type_54  }
+  _anonymous_type_54 = record
+    deviceType: ma_device_type;
+    pAudioClient: Pointer;
+    ppAudioClientService: PPointer;
+    pResult: Pma_result;
+  end;
+
+  { P_anonymous_type_54  }
+  P_anonymous_type_54 = ^_anonymous_type_54;
+
+  { _anonymous_type_55  }
+  _anonymous_type_55 = record
+    pDevice: Pma_device;
+    deviceType: ma_device_type;
+  end;
+
+  { P_anonymous_type_55  }
+  P_anonymous_type_55 = ^_anonymous_type_55;
+
+  { _anonymous_type_56  }
+  _anonymous_type_56 = record
+    case Integer of
+      0: (quit: _anonymous_type_53);
+      1: (createAudioClient: _anonymous_type_54);
+      2: (releaseAudioClient: _anonymous_type_55);
+  end;
+
+  { P_anonymous_type_56  }
+  P_anonymous_type_56 = ^_anonymous_type_56;
+
+  { ma_context_command__wasapi  }
+  ma_context_command__wasapi = record
+    code: Integer;
+    pEvent: Pma_event;
+    data: _anonymous_type_56;
+  end;
+
+  { _anonymous_type_57  }
+  _anonymous_type_57 = record
+    commandThread: ma_thread;
+    commandLock: ma_mutex;
+    commandSem: ma_semaphore;
+    commandIndex: ma_uint32;
+    commandCount: ma_uint32;
+    commands: array [0..3] of ma_context_command__wasapi;
+  end;
+
+  { P_anonymous_type_57  }
+  P_anonymous_type_57 = ^_anonymous_type_57;
+
+  { _anonymous_type_58  }
+  _anonymous_type_58 = record
+    hDSoundDLL: ma_handle;
+    DirectSoundCreate: ma_proc;
+    DirectSoundEnumerateA: ma_proc;
+    DirectSoundCaptureCreate: ma_proc;
+    DirectSoundCaptureEnumerateA: ma_proc;
+  end;
+
+  { P_anonymous_type_58  }
+  P_anonymous_type_58 = ^_anonymous_type_58;
+
+  { _anonymous_type_59  }
+  _anonymous_type_59 = record
+    hWinMM: ma_handle;
+    waveOutGetNumDevs: ma_proc;
+    waveOutGetDevCapsA: ma_proc;
+    waveOutOpen: ma_proc;
+    waveOutClose: ma_proc;
+    waveOutPrepareHeader: ma_proc;
+    waveOutUnprepareHeader: ma_proc;
+    waveOutWrite: ma_proc;
+    waveOutReset: ma_proc;
+    waveInGetNumDevs: ma_proc;
+    waveInGetDevCapsA: ma_proc;
+    waveInOpen: ma_proc;
+    waveInClose: ma_proc;
+    waveInPrepareHeader: ma_proc;
+    waveInUnprepareHeader: ma_proc;
+    waveInAddBuffer: ma_proc;
+    waveInStart: ma_proc;
+    waveInReset: ma_proc;
+  end;
+
+  { P_anonymous_type_59  }
+  P_anonymous_type_59 = ^_anonymous_type_59;
+
+  { _anonymous_type_60  }
+  _anonymous_type_60 = record
+    jackSO: ma_handle;
+    jack_client_open: ma_proc;
+    jack_client_close: ma_proc;
+    jack_client_name_size: ma_proc;
+    jack_set_process_callback: ma_proc;
+    jack_set_buffer_size_callback: ma_proc;
+    jack_on_shutdown: ma_proc;
+    jack_get_sample_rate: ma_proc;
+    jack_get_buffer_size: ma_proc;
+    jack_get_ports: ma_proc;
+    jack_activate: ma_proc;
+    jack_deactivate: ma_proc;
+    jack_connect: ma_proc;
+    jack_port_register: ma_proc;
+    jack_port_name: ma_proc;
+    jack_port_get_buffer: ma_proc;
+    jack_free: ma_proc;
+    pClientName: PUTF8Char;
+    tryStartServer: ma_bool32;
+  end;
+
+  { P_anonymous_type_60  }
+  P_anonymous_type_60 = ^_anonymous_type_60;
+
+  { _anonymous_type_61  }
+  _anonymous_type_61 = record
+    _unused: Integer;
+  end;
+
+  { P_anonymous_type_61  }
+  P_anonymous_type_61 = ^_anonymous_type_61;
+
+  { _anonymous_type_62  }
+  _anonymous_type_62 = record
+    case Integer of
+      0: (wasapi: _anonymous_type_57);
+      1: (dsound: _anonymous_type_58);
+      2: (winmm: _anonymous_type_59);
+      3: (jack: _anonymous_type_60);
+      4: (null_backend: _anonymous_type_61);
+  end;
+
+  { P_anonymous_type_62  }
+  P_anonymous_type_62 = ^_anonymous_type_62;
+
+  { _anonymous_type_63  }
+  _anonymous_type_63 = record
+    hOle32DLL: ma_handle;
+    CoInitializeEx: ma_proc;
+    CoUninitialize: ma_proc;
+    CoCreateInstance: ma_proc;
+    CoTaskMemFree: ma_proc;
+    PropVariantClear: ma_proc;
+    StringFromGUID2: ma_proc;
+    hUser32DLL: ma_handle;
+    GetForegroundWindow: ma_proc;
+    GetDesktopWindow: ma_proc;
+    hAdvapi32DLL: ma_handle;
+    RegOpenKeyExA: ma_proc;
+    RegCloseKey: ma_proc;
+    RegQueryValueExA: ma_proc;
+  end;
+
+  { P_anonymous_type_63  }
+  P_anonymous_type_63 = ^_anonymous_type_63;
+
+  { _anonymous_type_64  }
+  _anonymous_type_64 = record
+    case Integer of
+      0: (win32: _anonymous_type_63);
+      1: (_unused: Integer);
+  end;
+
+  { P_anonymous_type_64  }
+  P_anonymous_type_64 = ^_anonymous_type_64;
+
+  { ma_context  }
+  ma_context = record
+    callbacks: ma_backend_callbacks;
+    backend: ma_backend;
+    pLog: Pma_log;
+    log: ma_log;
+    threadPriority: ma_thread_priority;
+    threadStackSize: NativeUInt;
+    pUserData: Pointer;
+    allocationCallbacks: ma_allocation_callbacks;
+    deviceEnumLock: ma_mutex;
+    deviceInfoLock: ma_mutex;
+    deviceInfoCapacity: ma_uint32;
+    playbackDeviceInfoCount: ma_uint32;
+    captureDeviceInfoCount: ma_uint32;
+    pDeviceInfos: Pma_device_info;
+    f15: _anonymous_type_62;
+    f16: _anonymous_type_64;
+  end;
+
+  { _anonymous_type_65  }
+  _anonymous_type_65 = record
+    lpfOrder: ma_uint32;
+  end;
+
+  { P_anonymous_type_65  }
+  P_anonymous_type_65 = ^_anonymous_type_65;
+
+  { _anonymous_type_66  }
+  _anonymous_type_66 = record
+    algorithm: ma_resample_algorithm;
+    pBackendVTable: Pma_resampling_backend_vtable;
+    pBackendUserData: Pointer;
+    linear: _anonymous_type_65;
+  end;
+
+  { P_anonymous_type_66  }
+  P_anonymous_type_66 = ^_anonymous_type_66;
+
+  { _anonymous_type_67  }
+  _anonymous_type_67 = record
+    pID: Pma_device_id;
+    id: ma_device_id;
+    name: array [0..255] of UTF8Char;
+    shareMode: ma_share_mode;
+    format: ma_format;
+    channels: ma_uint32;
+    channelMap: array [0..253] of ma_channel;
+    internalFormat: ma_format;
+    internalChannels: ma_uint32;
+    internalSampleRate: ma_uint32;
+    internalChannelMap: array [0..253] of ma_channel;
+    internalPeriodSizeInFrames: ma_uint32;
+    internalPeriods: ma_uint32;
+    channelMixMode: ma_channel_mix_mode;
+    converter: ma_data_converter;
+    pIntermediaryBuffer: Pointer;
+    intermediaryBufferCap: ma_uint32;
+    intermediaryBufferLen: ma_uint32;
+    pInputCache: Pointer;
+    inputCacheCap: ma_uint64;
+    inputCacheConsumed: ma_uint64;
+    inputCacheRemaining: ma_uint64;
+  end;
+
+  { P_anonymous_type_67  }
+  P_anonymous_type_67 = ^_anonymous_type_67;
+
+  { _anonymous_type_68  }
+  _anonymous_type_68 = record
+    pID: Pma_device_id;
+    id: ma_device_id;
+    name: array [0..255] of UTF8Char;
+    shareMode: ma_share_mode;
+    format: ma_format;
+    channels: ma_uint32;
+    channelMap: array [0..253] of ma_channel;
+    internalFormat: ma_format;
+    internalChannels: ma_uint32;
+    internalSampleRate: ma_uint32;
+    internalChannelMap: array [0..253] of ma_channel;
+    internalPeriodSizeInFrames: ma_uint32;
+    internalPeriods: ma_uint32;
+    channelMixMode: ma_channel_mix_mode;
+    converter: ma_data_converter;
+    pIntermediaryBuffer: Pointer;
+    intermediaryBufferCap: ma_uint32;
+    intermediaryBufferLen: ma_uint32;
+  end;
+
+  { P_anonymous_type_68  }
+  P_anonymous_type_68 = ^_anonymous_type_68;
+
+  { _anonymous_type_69  }
+  _anonymous_type_69 = record
+    pAudioClientPlayback: ma_ptr;
+    pAudioClientCapture: ma_ptr;
+    pRenderClient: ma_ptr;
+    pCaptureClient: ma_ptr;
+    pDeviceEnumerator: ma_ptr;
+    notificationClient: ma_IMMNotificationClient;
+    hEventPlayback: ma_handle;
+    hEventCapture: ma_handle;
+    actualPeriodSizeInFramesPlayback: ma_uint32;
+    actualPeriodSizeInFramesCapture: ma_uint32;
+    originalPeriodSizeInFrames: ma_uint32;
+    originalPeriodSizeInMilliseconds: ma_uint32;
+    originalPeriods: ma_uint32;
+    originalPerformanceProfile: ma_performance_profile;
+    periodSizeInFramesPlayback: ma_uint32;
+    periodSizeInFramesCapture: ma_uint32;
+    isStartedCapture: ma_bool32;
+    isStartedPlayback: ma_bool32;
+    noAutoConvertSRC: ma_bool8;
+    noDefaultQualitySRC: ma_bool8;
+    noHardwareOffloading: ma_bool8;
+    allowCaptureAutoStreamRouting: ma_bool8;
+    allowPlaybackAutoStreamRouting: ma_bool8;
+    isDetachedPlayback: ma_bool8;
+    isDetachedCapture: ma_bool8;
+  end;
+
+  { P_anonymous_type_69  }
+  P_anonymous_type_69 = ^_anonymous_type_69;
+
+  { _anonymous_type_70  }
+  _anonymous_type_70 = record
+    pPlayback: ma_ptr;
+    pPlaybackPrimaryBuffer: ma_ptr;
+    pPlaybackBuffer: ma_ptr;
+    pCapture: ma_ptr;
+    pCaptureBuffer: ma_ptr;
+  end;
+
+  { P_anonymous_type_70  }
+  P_anonymous_type_70 = ^_anonymous_type_70;
+
+  { _anonymous_type_71  }
+  _anonymous_type_71 = record
+    hDevicePlayback: ma_handle;
+    hDeviceCapture: ma_handle;
+    hEventPlayback: ma_handle;
+    hEventCapture: ma_handle;
+    fragmentSizeInFrames: ma_uint32;
+    iNextHeaderPlayback: ma_uint32;
+    iNextHeaderCapture: ma_uint32;
+    headerFramesConsumedPlayback: ma_uint32;
+    headerFramesConsumedCapture: ma_uint32;
+    pWAVEHDRPlayback: Pma_uint8;
+    pWAVEHDRCapture: Pma_uint8;
+    pIntermediaryBufferPlayback: Pma_uint8;
+    pIntermediaryBufferCapture: Pma_uint8;
+    _pHeapData: Pma_uint8;
+  end;
+
+  { P_anonymous_type_71  }
+  P_anonymous_type_71 = ^_anonymous_type_71;
+
+  { _anonymous_type_72  }
+  _anonymous_type_72 = record
+    pClient: ma_ptr;
+    ppPortsPlayback: Pma_ptr;
+    ppPortsCapture: Pma_ptr;
+    pIntermediaryBufferPlayback: PSingle;
+    pIntermediaryBufferCapture: PSingle;
+  end;
+
+  { P_anonymous_type_72  }
+  P_anonymous_type_72 = ^_anonymous_type_72;
+
+  { _anonymous_type_73  }
+  _anonymous_type_73 = record
+    deviceThread: ma_thread;
+    operationEvent: ma_event;
+    operationCompletionEvent: ma_event;
+    operationSemaphore: ma_semaphore;
+    operation: ma_uint32;
+    operationResult: ma_result;
+    timer: ma_timer;
+    priorRunTime: Double;
+    currentPeriodFramesRemainingPlayback: ma_uint32;
+    currentPeriodFramesRemainingCapture: ma_uint32;
+    lastProcessedFramePlayback: ma_uint64;
+    lastProcessedFrameCapture: ma_uint64;
+    isStarted: ma_bool32;
+  end;
+
+  { P_anonymous_type_73  }
+  P_anonymous_type_73 = ^_anonymous_type_73;
+
+  { _anonymous_type_74  }
+  _anonymous_type_74 = record
+    case Integer of
+      0: (wasapi: _anonymous_type_69);
+      1: (dsound: _anonymous_type_70);
+      2: (winmm: _anonymous_type_71);
+      3: (jack: _anonymous_type_72);
+      4: (null_device: _anonymous_type_73);
+  end;
+
+  { P_anonymous_type_74  }
+  P_anonymous_type_74 = ^_anonymous_type_74;
+
+  { ma_device  }
+  ma_device = record
+    pContext: Pma_context;
+    _type: ma_device_type;
+    sampleRate: ma_uint32;
+    state: ma_device_state;
+    onData: ma_device_data_proc;
+    onNotification: ma_device_notification_proc;
+    onStop: ma_stop_proc;
+    pUserData: Pointer;
+    startStopLock: ma_mutex;
+    wakeupEvent: ma_event;
+    startEvent: ma_event;
+    stopEvent: ma_event;
+    thread: ma_thread;
+    workResult: ma_result;
+    isOwnerOfContext: ma_bool8;
+    noPreSilencedOutputBuffer: ma_bool8;
+    noClip: ma_bool8;
+    noDisableDenormals: ma_bool8;
+    noFixedSizedCallback: ma_bool8;
+    masterVolumeFactor: Single;
+    duplexRB: ma_duplex_rb;
+    resampling: _anonymous_type_66;
+    playback: _anonymous_type_67;
+    capture: _anonymous_type_68;
+    f25: _anonymous_type_74;
   end;
 
   { Pma_data_source  }
@@ -4660,34 +4934,34 @@ type
     pCustomBackendUserData: Pointer;
   end;
 
-  { _anonymous_type_58  }
-  _anonymous_type_58 = record
+  { _anonymous_type_75  }
+  _anonymous_type_75 = record
     pVFS: Pma_vfs;
     _file: ma_vfs_file;
   end;
 
-  { P_anonymous_type_58  }
-  P_anonymous_type_58 = ^_anonymous_type_58;
+  { P_anonymous_type_75  }
+  P_anonymous_type_75 = ^_anonymous_type_75;
 
-  { _anonymous_type_59  }
-  _anonymous_type_59 = record
+  { _anonymous_type_76  }
+  _anonymous_type_76 = record
     pData: Pma_uint8;
     dataSize: NativeUInt;
     currentReadPos: NativeUInt;
   end;
 
-  { P_anonymous_type_59  }
-  P_anonymous_type_59 = ^_anonymous_type_59;
+  { P_anonymous_type_76  }
+  P_anonymous_type_76 = ^_anonymous_type_76;
 
-  { _anonymous_type_60  }
-  _anonymous_type_60 = record
+  { _anonymous_type_77  }
+  _anonymous_type_77 = record
     case Integer of
-      0: (vfs: _anonymous_type_58);
-      1: (memory: _anonymous_type_59);
+      0: (vfs: _anonymous_type_75);
+      1: (memory: _anonymous_type_76);
   end;
 
-  { P_anonymous_type_60  }
-  P_anonymous_type_60 = ^_anonymous_type_60;
+  { P_anonymous_type_77  }
+  P_anonymous_type_77 = ^_anonymous_type_77;
 
   { ma_decoder  }
   ma_decoder = record
@@ -4709,14 +4983,14 @@ type
     inputCacheConsumed: ma_uint64;
     inputCacheRemaining: ma_uint64;
     allocationCallbacks: ma_allocation_callbacks;
-    data: _anonymous_type_60;
+    data: _anonymous_type_77;
   end;
 
   { ma_encoder_write_proc  }
-  ma_encoder_write_proc = function(pEncoder: Pma_encoder; const pBufferIn: Pointer; bytesToWrite: NativeUInt): NativeUInt; cdecl;
+  ma_encoder_write_proc = function(pEncoder: Pma_encoder; const pBufferIn: Pointer; bytesToWrite: NativeUInt; pBytesWritten: PNativeUInt): ma_result; cdecl;
 
   { ma_encoder_seek_proc  }
-  ma_encoder_seek_proc = function(pEncoder: Pma_encoder; byteOffset: Integer; origin: ma_seek_origin): ma_bool32; cdecl;
+  ma_encoder_seek_proc = function(pEncoder: Pma_encoder; offset: ma_int64; origin: ma_seek_origin): ma_result; cdecl;
 
   { ma_encoder_init_proc  }
   ma_encoder_init_proc = function(pEncoder: Pma_encoder): ma_result; cdecl;
@@ -4736,6 +5010,24 @@ type
     allocationCallbacks: ma_allocation_callbacks;
   end;
 
+  { _anonymous_type_78  }
+  _anonymous_type_78 = record
+    pVFS: Pma_vfs;
+    _file: ma_vfs_file;
+  end;
+
+  { P_anonymous_type_78  }
+  P_anonymous_type_78 = ^_anonymous_type_78;
+
+  { _anonymous_type_79  }
+  _anonymous_type_79 = record
+    case Integer of
+      0: (vfs: _anonymous_type_78);
+  end;
+
+  { P_anonymous_type_79  }
+  P_anonymous_type_79 = ^_anonymous_type_79;
+
   { ma_encoder  }
   ma_encoder = record
     config: ma_encoder_config;
@@ -4746,7 +5038,7 @@ type
     onWritePCMFrames: ma_encoder_write_pcm_frames_proc;
     pUserData: Pointer;
     pInternalEncoder: Pointer;
-    pFile: Pointer;
+    data: _anonymous_type_79;
   end;
 
   { ma_waveform_config  }
@@ -4777,40 +5069,40 @@ type
     duplicateChannels: ma_bool32;
   end;
 
-  { _anonymous_type_61  }
-  _anonymous_type_61 = record
+  { _anonymous_type_80  }
+  _anonymous_type_80 = record
     bin: PPDouble;
     accumulation: PDouble;
     counter: Pma_uint32;
   end;
 
-  { P_anonymous_type_61  }
-  P_anonymous_type_61 = ^_anonymous_type_61;
+  { P_anonymous_type_80  }
+  P_anonymous_type_80 = ^_anonymous_type_80;
 
-  { _anonymous_type_62  }
-  _anonymous_type_62 = record
+  { _anonymous_type_81  }
+  _anonymous_type_81 = record
     accumulation: PDouble;
   end;
 
-  { P_anonymous_type_62  }
-  P_anonymous_type_62 = ^_anonymous_type_62;
+  { P_anonymous_type_81  }
+  P_anonymous_type_81 = ^_anonymous_type_81;
 
-  { _anonymous_type_63  }
-  _anonymous_type_63 = record
+  { _anonymous_type_82  }
+  _anonymous_type_82 = record
     case Integer of
-      0: (pink: _anonymous_type_61);
-      1: (brownian: _anonymous_type_62);
+      0: (pink: _anonymous_type_80);
+      1: (brownian: _anonymous_type_81);
   end;
 
-  { P_anonymous_type_63  }
-  P_anonymous_type_63 = ^_anonymous_type_63;
+  { P_anonymous_type_82  }
+  P_anonymous_type_82 = ^_anonymous_type_82;
 
   { ma_noise  }
   ma_noise = record
     ds: ma_data_source_vtable;
     config: ma_noise_config;
     lcg: ma_lcg;
-    state: _anonymous_type_63;
+    state: _anonymous_type_82;
     _pHeap: Pointer;
     _ownsHeap: ma_bool32;
   end;
@@ -4827,180 +5119,6 @@ type
     done: ma_resource_manager_pipeline_stage_notification;
   end;
 
-  { _anonymous_type_64  }
-  _anonymous_type_64 = record
-    code: ma_uint16;
-    slot: ma_uint16;
-    refcount: ma_uint32;
-  end;
-
-  { P_anonymous_type_64  }
-  P_anonymous_type_64 = ^_anonymous_type_64;
-
-  { _anonymous_type_65  }
-  _anonymous_type_65 = record
-    case Integer of
-      0: (breakup: _anonymous_type_64);
-      1: (allocation: ma_uint64);
-  end;
-
-  { P_anonymous_type_65  }
-  P_anonymous_type_65 = ^_anonymous_type_65;
-
-  { _anonymous_type_66  }
-  _anonymous_type_66 = record
-    pDataBufferNode: Pma_resource_manager_data_buffer_node;
-    pFilePath: PUTF8Char;
-    pFilePathW: PWideChar;
-    decode: ma_bool32;
-    pInitNotification: Pma_async_notification;
-    pDoneNotification: Pma_async_notification;
-    pInitFence: Pma_fence;
-    pDoneFence: Pma_fence;
-  end;
-
-  { P_anonymous_type_66  }
-  P_anonymous_type_66 = ^_anonymous_type_66;
-
-  { _anonymous_type_67  }
-  _anonymous_type_67 = record
-    pDataBufferNode: Pma_resource_manager_data_buffer_node;
-    pDoneNotification: Pma_async_notification;
-    pDoneFence: Pma_fence;
-  end;
-
-  { P_anonymous_type_67  }
-  P_anonymous_type_67 = ^_anonymous_type_67;
-
-  { _anonymous_type_68  }
-  _anonymous_type_68 = record
-    pDataBufferNode: Pma_resource_manager_data_buffer_node;
-    pDecoder: Pma_decoder;
-    pDoneNotification: Pma_async_notification;
-    pDoneFence: Pma_fence;
-  end;
-
-  { P_anonymous_type_68  }
-  P_anonymous_type_68 = ^_anonymous_type_68;
-
-  { _anonymous_type_69  }
-  _anonymous_type_69 = record
-    pDataBuffer: Pma_resource_manager_data_buffer;
-    pInitNotification: Pma_async_notification;
-    pDoneNotification: Pma_async_notification;
-    pInitFence: Pma_fence;
-    pDoneFence: Pma_fence;
-  end;
-
-  { P_anonymous_type_69  }
-  P_anonymous_type_69 = ^_anonymous_type_69;
-
-  { _anonymous_type_70  }
-  _anonymous_type_70 = record
-    pDataBuffer: Pma_resource_manager_data_buffer;
-    pDoneNotification: Pma_async_notification;
-    pDoneFence: Pma_fence;
-  end;
-
-  { P_anonymous_type_70  }
-  P_anonymous_type_70 = ^_anonymous_type_70;
-
-  { _anonymous_type_71  }
-  _anonymous_type_71 = record
-    pDataStream: Pma_resource_manager_data_stream;
-    pFilePath: PUTF8Char;
-    pFilePathW: PWideChar;
-    initialSeekPoint: ma_uint64;
-    pInitNotification: Pma_async_notification;
-    pInitFence: Pma_fence;
-  end;
-
-  { P_anonymous_type_71  }
-  P_anonymous_type_71 = ^_anonymous_type_71;
-
-  { _anonymous_type_72  }
-  _anonymous_type_72 = record
-    pDataStream: Pma_resource_manager_data_stream;
-    pDoneNotification: Pma_async_notification;
-    pDoneFence: Pma_fence;
-  end;
-
-  { P_anonymous_type_72  }
-  P_anonymous_type_72 = ^_anonymous_type_72;
-
-  { _anonymous_type_73  }
-  _anonymous_type_73 = record
-    pDataStream: Pma_resource_manager_data_stream;
-    pageIndex: ma_uint32;
-  end;
-
-  { P_anonymous_type_73  }
-  P_anonymous_type_73 = ^_anonymous_type_73;
-
-  { _anonymous_type_74  }
-  _anonymous_type_74 = record
-    pDataStream: Pma_resource_manager_data_stream;
-    frameIndex: ma_uint64;
-  end;
-
-  { P_anonymous_type_74  }
-  P_anonymous_type_74 = ^_anonymous_type_74;
-
-  { _anonymous_type_75  }
-  _anonymous_type_75 = record
-    data0: ma_uintptr;
-    data1: ma_uintptr;
-  end;
-
-  { P_anonymous_type_75  }
-  P_anonymous_type_75 = ^_anonymous_type_75;
-
-  { _anonymous_type_76  }
-  _anonymous_type_76 = record
-    case Integer of
-      0: (loadDataBufferNode: _anonymous_type_66);
-      1: (freeDataBufferNode: _anonymous_type_67);
-      2: (pageDataBufferNode: _anonymous_type_68);
-      3: (loadDataBuffer: _anonymous_type_69);
-      4: (freeDataBuffer: _anonymous_type_70);
-      5: (loadDataStream: _anonymous_type_71);
-      6: (freeDataStream: _anonymous_type_72);
-      7: (pageDataStream: _anonymous_type_73);
-      8: (seekDataStream: _anonymous_type_74);
-      9: (custom: _anonymous_type_75);
-  end;
-
-  { P_anonymous_type_76  }
-  P_anonymous_type_76 = ^_anonymous_type_76;
-
-  { ma_resource_manager_job  }
-  ma_resource_manager_job = record
-    toc: _anonymous_type_65;
-    next: ma_uint64;
-    order: ma_uint32;
-    data: _anonymous_type_76;
-  end;
-
-  { ma_resource_manager_job_queue_config  }
-  ma_resource_manager_job_queue_config = record
-    flags: ma_uint32;
-    capacity: ma_uint32;
-  end;
-
-  { ma_resource_manager_job_queue  }
-  ma_resource_manager_job_queue = record
-    flags: ma_uint32;
-    capacity: ma_uint32;
-    head: ma_uint64;
-    tail: ma_uint64;
-    sem: ma_semaphore;
-    allocator: ma_slot_allocator;
-    pJobs: Pma_resource_manager_job;
-    lock: ma_spinlock;
-    _pHeap: Pointer;
-    _ownsHeap: ma_bool32;
-  end;
-
   { ma_resource_manager_data_source_config  }
   ma_resource_manager_data_source_config = record
     pFilePath: PUTF8Char;
@@ -5015,17 +5133,17 @@ type
     flags: ma_uint32;
   end;
 
-  { _anonymous_type_77  }
-  _anonymous_type_77 = record
+  { _anonymous_type_83  }
+  _anonymous_type_83 = record
     pData: Pointer;
     sizeInBytes: NativeUInt;
   end;
 
-  { P_anonymous_type_77  }
-  P_anonymous_type_77 = ^_anonymous_type_77;
+  { P_anonymous_type_83  }
+  P_anonymous_type_83 = ^_anonymous_type_83;
 
-  { _anonymous_type_78  }
-  _anonymous_type_78 = record
+  { _anonymous_type_84  }
+  _anonymous_type_84 = record
     pData: Pointer;
     totalFrameCount: ma_uint64;
     decodedFrameCount: ma_uint64;
@@ -5034,34 +5152,34 @@ type
     sampleRate: ma_uint32;
   end;
 
-  { P_anonymous_type_78  }
-  P_anonymous_type_78 = ^_anonymous_type_78;
+  { P_anonymous_type_84  }
+  P_anonymous_type_84 = ^_anonymous_type_84;
 
-  { _anonymous_type_79  }
-  _anonymous_type_79 = record
+  { _anonymous_type_85  }
+  _anonymous_type_85 = record
     data: ma_paged_audio_buffer_data;
     decodedFrameCount: ma_uint64;
     sampleRate: ma_uint32;
   end;
 
-  { P_anonymous_type_79  }
-  P_anonymous_type_79 = ^_anonymous_type_79;
+  { P_anonymous_type_85  }
+  P_anonymous_type_85 = ^_anonymous_type_85;
 
-  { _anonymous_type_80  }
-  _anonymous_type_80 = record
+  { _anonymous_type_86  }
+  _anonymous_type_86 = record
     case Integer of
-      0: (encoded: _anonymous_type_77);
-      1: (decoded: _anonymous_type_78);
-      2: (decodedPaged: _anonymous_type_79);
+      0: (encoded: _anonymous_type_83);
+      1: (decoded: _anonymous_type_84);
+      2: (decodedPaged: _anonymous_type_85);
   end;
 
-  { P_anonymous_type_80  }
-  P_anonymous_type_80 = ^_anonymous_type_80;
+  { P_anonymous_type_86  }
+  P_anonymous_type_86 = ^_anonymous_type_86;
 
   { ma_resource_manager_data_supply  }
   ma_resource_manager_data_supply = record
     _type: ma_resource_manager_data_supply_type;
-    backend: _anonymous_type_80;
+    backend: _anonymous_type_86;
   end;
 
   { ma_resource_manager_data_buffer_node  }
@@ -5078,16 +5196,16 @@ type
     pChildHi: Pma_resource_manager_data_buffer_node;
   end;
 
-  { _anonymous_type_81  }
-  _anonymous_type_81 = record
+  { _anonymous_type_87  }
+  _anonymous_type_87 = record
     case Integer of
       0: (decoder: ma_decoder);
       1: (buffer: ma_audio_buffer);
       2: (pagedBuffer: ma_paged_audio_buffer);
   end;
 
-  { P_anonymous_type_81  }
-  P_anonymous_type_81 = ^_anonymous_type_81;
+  { P_anonymous_type_87  }
+  P_anonymous_type_87 = ^_anonymous_type_87;
 
   { ma_resource_manager_data_buffer  }
   ma_resource_manager_data_buffer = record
@@ -5102,7 +5220,7 @@ type
     result: ma_result;
     isLooping: ma_bool32;
     isConnectorInitialized: ma_bool32;
-    connector: _anonymous_type_81;
+    connector: _anonymous_type_87;
   end;
 
   { ma_resource_manager_data_stream  }
@@ -5127,19 +5245,19 @@ type
     seekCounter: ma_bool32;
   end;
 
-  { _anonymous_type_82  }
-  _anonymous_type_82 = record
+  { _anonymous_type_88  }
+  _anonymous_type_88 = record
     case Integer of
       0: (buffer: ma_resource_manager_data_buffer);
       1: (stream: ma_resource_manager_data_stream);
   end;
 
-  { P_anonymous_type_82  }
-  P_anonymous_type_82 = ^_anonymous_type_82;
+  { P_anonymous_type_88  }
+  P_anonymous_type_88 = ^_anonymous_type_88;
 
   { ma_resource_manager_data_source  }
   ma_resource_manager_data_source = record
-    backend: _anonymous_type_82;
+    backend: _anonymous_type_88;
     flags: ma_uint32;
     executionCounter: ma_uint32;
     executionPointer: ma_uint32;
@@ -5167,7 +5285,7 @@ type
     pRootDataBufferNode: Pma_resource_manager_data_buffer_node;
     dataBufferBSTLock: ma_mutex;
     jobThreads: array [0..63] of ma_thread;
-    jobQueue: ma_resource_manager_job_queue;
+    jobQueue: ma_job_queue;
     defaultVFS: ma_default_vfs;
     log: ma_log;
   end;
@@ -5246,11 +5364,13 @@ type
   { ma_node_graph_config  }
   ma_node_graph_config = record
     channels: ma_uint32;
+    nodeCacheCapInFrames: ma_uint16;
   end;
 
   { ma_node_graph  }
   ma_node_graph = record
     endpoint: ma_node_base;
+    nodeCacheCapInFrames: ma_uint16;
     isReading: ma_bool32;
   end;
 
@@ -8166,6 +8286,12 @@ var
   ma_device_init: function(pContext: Pma_context; const pConfig: Pma_device_config; pDevice: Pma_device): ma_result; cdecl;
   ma_device_init_ex: function(backends: Pma_backend; backendCount: ma_uint32; const pContextConfig: Pma_context_config; const pConfig: Pma_device_config; pDevice: Pma_device): ma_result; cdecl;
   ma_device_is_started: function(const pDevice: Pma_device): ma_bool32; cdecl;
+  ma_device_job_thread_config_init: function(): ma_device_job_thread_config; cdecl;
+  ma_device_job_thread_init: function(const pConfig: Pma_device_job_thread_config; const pAllocationCallbacks: Pma_allocation_callbacks; pJobThread: Pma_device_job_thread): ma_result; cdecl;
+  ma_device_job_thread_next: function(pJobThread: Pma_device_job_thread; pJob: Pma_job): ma_result; cdecl;
+  ma_device_job_thread_post: function(pJobThread: Pma_device_job_thread; const pJob: Pma_job): ma_result; cdecl;
+  ma_device_job_thread_uninit: procedure(pJobThread: Pma_device_job_thread; const pAllocationCallbacks: Pma_allocation_callbacks); cdecl;
+  ma_device_post_init: function(pDevice: Pma_device; deviceType: ma_device_type; const pPlaybackDescriptor: Pma_device_descriptor; const pCaptureDescriptor: Pma_device_descriptor): ma_result; cdecl;
   ma_device_set_master_volume: function(pDevice: Pma_device; volume: Single): ma_result; cdecl;
   ma_device_set_master_volume_db: function(pDevice: Pma_device; gainDB: Single): ma_result; cdecl;
   ma_device_start: function(pDevice: Pma_device): ma_result; cdecl;
@@ -8177,6 +8303,8 @@ var
   ma_encoder_init: function(onWrite: ma_encoder_write_proc; onSeek: ma_encoder_seek_proc; pUserData: Pointer; const pConfig: Pma_encoder_config; pEncoder: Pma_encoder): ma_result; cdecl;
   ma_encoder_init_file: function(const pFilePath: PUTF8Char; const pConfig: Pma_encoder_config; pEncoder: Pma_encoder): ma_result; cdecl;
   ma_encoder_init_file_w: function(const pFilePath: PWideChar; const pConfig: Pma_encoder_config; pEncoder: Pma_encoder): ma_result; cdecl;
+  ma_encoder_init_vfs: function(pVFS: Pma_vfs; const pFilePath: PUTF8Char; const pConfig: Pma_encoder_config; pEncoder: Pma_encoder): ma_result; cdecl;
+  ma_encoder_init_vfs_w: function(pVFS: Pma_vfs; const pFilePath: PWideChar; const pConfig: Pma_encoder_config; pEncoder: Pma_encoder): ma_result; cdecl;
   ma_encoder_uninit: procedure(pEncoder: Pma_encoder); cdecl;
   ma_encoder_write_pcm_frames: function(pEncoder: Pma_encoder; const pFramesIn: Pointer; frameCount: ma_uint64; pFramesWritten: Pma_uint64): ma_result; cdecl;
   ma_engine_config_init: function(): ma_engine_config; cdecl;
@@ -8211,7 +8339,7 @@ var
   ma_engine_play_sound: function(pEngine: Pma_engine; const pFilePath: PUTF8Char; pGroup: Pma_sound_group): ma_result; cdecl;
   ma_engine_read_pcm_frames: function(pEngine: Pma_engine; pFramesOut: Pointer; frameCount: ma_uint64; pFramesRead: Pma_uint64): ma_result; cdecl;
   ma_engine_set_gain_db: function(pEngine: Pma_engine; gainDB: Single): ma_result; cdecl;
-  ma_engine_set_time: function(pEngine: Pma_engine; globalTime: ma_uint64): ma_uint64; cdecl;
+  ma_engine_set_time: function(pEngine: Pma_engine; globalTime: ma_uint64): ma_result; cdecl;
   ma_engine_set_volume: function(pEngine: Pma_engine; volume: Single): ma_result; cdecl;
   ma_engine_start: function(pEngine: Pma_engine): ma_result; cdecl;
   ma_engine_stop: function(pEngine: Pma_engine): ma_result; cdecl;
@@ -8287,6 +8415,15 @@ var
   ma_interleave_pcm_frames: procedure(format: ma_format; channels: ma_uint32; frameCount: ma_uint64; ppDeinterleavedPCMFrames: PPointer; pInterleavedPCMFrames: Pointer); cdecl;
   ma_is_backend_enabled: function(backend: ma_backend): ma_bool32; cdecl;
   ma_is_loopback_supported: function(backend: ma_backend): ma_bool32; cdecl;
+  ma_job_init: function(code: ma_uint16): ma_job; cdecl;
+  ma_job_process: function(pJob: Pma_job): ma_result; cdecl;
+  ma_job_queue_config_init: function(flags: ma_uint32; capacity: ma_uint32): ma_job_queue_config; cdecl;
+  ma_job_queue_get_heap_size: function(const pConfig: Pma_job_queue_config; pHeapSizeInBytes: PNativeUInt): ma_result; cdecl;
+  ma_job_queue_init: function(const pConfig: Pma_job_queue_config; const pAllocationCallbacks: Pma_allocation_callbacks; pQueue: Pma_job_queue): ma_result; cdecl;
+  ma_job_queue_init_preallocated: function(const pConfig: Pma_job_queue_config; pHeap: Pointer; pQueue: Pma_job_queue): ma_result; cdecl;
+  ma_job_queue_next: function(pQueue: Pma_job_queue; pJob: Pma_job): ma_result; cdecl;
+  ma_job_queue_post: function(pQueue: Pma_job_queue; const pJob: Pma_job): ma_result; cdecl;
+  ma_job_queue_uninit: procedure(pQueue: Pma_job_queue; const pAllocationCallbacks: Pma_allocation_callbacks); cdecl;
   ma_linear_resampler_config_init: function(format: ma_format; channels: ma_uint32; sampleRateIn: ma_uint32; sampleRateOut: ma_uint32): ma_linear_resampler_config; cdecl;
   ma_linear_resampler_get_expected_output_frame_count: function(const pResampler: Pma_linear_resampler; inputFrameCount: ma_uint64; pOutputFrameCount: Pma_uint64): ma_result; cdecl;
   ma_linear_resampler_get_heap_size: function(const pConfig: Pma_linear_resampler_config; pHeapSizeInBytes: PNativeUInt): ma_result; cdecl;
@@ -8357,7 +8494,7 @@ var
   ma_node_config_init: function(): ma_node_config; cdecl;
   ma_node_detach_all_output_buses: function(pNode: Pma_node): ma_result; cdecl;
   ma_node_detach_output_bus: function(pNode: Pma_node; outputBusIndex: ma_uint32): ma_result; cdecl;
-  ma_node_get_heap_size: function(const pConfig: Pma_node_config; pHeapSizeInBytes: PNativeUInt): ma_result; cdecl;
+  ma_node_get_heap_size: function(pNodeGraph: Pma_node_graph; const pConfig: Pma_node_config; pHeapSizeInBytes: PNativeUInt): ma_result; cdecl;
   ma_node_get_input_bus_count: function(const pNode: Pma_node): ma_uint32; cdecl;
   ma_node_get_input_channels: function(const pNode: Pma_node; inputBusIndex: ma_uint32): ma_uint32; cdecl;
   ma_node_get_node_graph: function(const pNode: Pma_node): Pma_node_graph; cdecl;
@@ -8555,19 +8692,11 @@ var
   ma_resource_manager_data_stream_uninit: function(pDataStream: Pma_resource_manager_data_stream): ma_result; cdecl;
   ma_resource_manager_get_log: function(pResourceManager: Pma_resource_manager): Pma_log; cdecl;
   ma_resource_manager_init: function(const pConfig: Pma_resource_manager_config; pResourceManager: Pma_resource_manager): ma_result; cdecl;
-  ma_resource_manager_job_init: function(code: ma_uint16): ma_resource_manager_job; cdecl;
-  ma_resource_manager_job_queue_config_init: function(flags: ma_uint32; capacity: ma_uint32): ma_resource_manager_job_queue_config; cdecl;
-  ma_resource_manager_job_queue_get_heap_size: function(const pConfig: Pma_resource_manager_job_queue_config; pHeapSizeInBytes: PNativeUInt): ma_result; cdecl;
-  ma_resource_manager_job_queue_init: function(const pConfig: Pma_resource_manager_job_queue_config; const pAllocationCallbacks: Pma_allocation_callbacks; pQueue: Pma_resource_manager_job_queue): ma_result; cdecl;
-  ma_resource_manager_job_queue_init_preallocated: function(const pConfig: Pma_resource_manager_job_queue_config; pHeap: Pointer; pQueue: Pma_resource_manager_job_queue): ma_result; cdecl;
-  ma_resource_manager_job_queue_next: function(pQueue: Pma_resource_manager_job_queue; pJob: Pma_resource_manager_job): ma_result; cdecl;
-  ma_resource_manager_job_queue_post: function(pQueue: Pma_resource_manager_job_queue; const pJob: Pma_resource_manager_job): ma_result; cdecl;
-  ma_resource_manager_job_queue_uninit: procedure(pQueue: Pma_resource_manager_job_queue; const pAllocationCallbacks: Pma_allocation_callbacks); cdecl;
-  ma_resource_manager_next_job: function(pResourceManager: Pma_resource_manager; pJob: Pma_resource_manager_job): ma_result; cdecl;
+  ma_resource_manager_next_job: function(pResourceManager: Pma_resource_manager; pJob: Pma_job): ma_result; cdecl;
   ma_resource_manager_pipeline_notifications_init: function(): ma_resource_manager_pipeline_notifications; cdecl;
-  ma_resource_manager_post_job: function(pResourceManager: Pma_resource_manager; const pJob: Pma_resource_manager_job): ma_result; cdecl;
+  ma_resource_manager_post_job: function(pResourceManager: Pma_resource_manager; const pJob: Pma_job): ma_result; cdecl;
   ma_resource_manager_post_job_quit: function(pResourceManager: Pma_resource_manager): ma_result; cdecl;
-  ma_resource_manager_process_job: function(pResourceManager: Pma_resource_manager; pJob: Pma_resource_manager_job): ma_result; cdecl;
+  ma_resource_manager_process_job: function(pResourceManager: Pma_resource_manager; pJob: Pma_job): ma_result; cdecl;
   ma_resource_manager_process_next_job: function(pResourceManager: Pma_resource_manager): ma_result; cdecl;
   ma_resource_manager_register_decoded_data: function(pResourceManager: Pma_resource_manager; const pName: PUTF8Char; const pData: Pointer; frameCount: ma_uint64; format: ma_format; channels: ma_uint32; sampleRate: ma_uint32): ma_result; cdecl;
   ma_resource_manager_register_decoded_data_w: function(pResourceManager: Pma_resource_manager; const pName: PWideChar; const pData: Pointer; frameCount: ma_uint64; format: ma_format; channels: ma_uint32; sampleRate: ma_uint32): ma_result; cdecl;
@@ -10097,6 +10226,12 @@ begin
   ma_device_init := GetProcAddress(LDllHandle, 'ma_device_init');
   ma_device_init_ex := GetProcAddress(LDllHandle, 'ma_device_init_ex');
   ma_device_is_started := GetProcAddress(LDllHandle, 'ma_device_is_started');
+  ma_device_job_thread_config_init := GetProcAddress(LDllHandle, 'ma_device_job_thread_config_init');
+  ma_device_job_thread_init := GetProcAddress(LDllHandle, 'ma_device_job_thread_init');
+  ma_device_job_thread_next := GetProcAddress(LDllHandle, 'ma_device_job_thread_next');
+  ma_device_job_thread_post := GetProcAddress(LDllHandle, 'ma_device_job_thread_post');
+  ma_device_job_thread_uninit := GetProcAddress(LDllHandle, 'ma_device_job_thread_uninit');
+  ma_device_post_init := GetProcAddress(LDllHandle, 'ma_device_post_init');
   ma_device_set_master_volume := GetProcAddress(LDllHandle, 'ma_device_set_master_volume');
   ma_device_set_master_volume_db := GetProcAddress(LDllHandle, 'ma_device_set_master_volume_db');
   ma_device_start := GetProcAddress(LDllHandle, 'ma_device_start');
@@ -10108,6 +10243,8 @@ begin
   ma_encoder_init := GetProcAddress(LDllHandle, 'ma_encoder_init');
   ma_encoder_init_file := GetProcAddress(LDllHandle, 'ma_encoder_init_file');
   ma_encoder_init_file_w := GetProcAddress(LDllHandle, 'ma_encoder_init_file_w');
+  ma_encoder_init_vfs := GetProcAddress(LDllHandle, 'ma_encoder_init_vfs');
+  ma_encoder_init_vfs_w := GetProcAddress(LDllHandle, 'ma_encoder_init_vfs_w');
   ma_encoder_uninit := GetProcAddress(LDllHandle, 'ma_encoder_uninit');
   ma_encoder_write_pcm_frames := GetProcAddress(LDllHandle, 'ma_encoder_write_pcm_frames');
   ma_engine_config_init := GetProcAddress(LDllHandle, 'ma_engine_config_init');
@@ -10218,6 +10355,15 @@ begin
   ma_interleave_pcm_frames := GetProcAddress(LDllHandle, 'ma_interleave_pcm_frames');
   ma_is_backend_enabled := GetProcAddress(LDllHandle, 'ma_is_backend_enabled');
   ma_is_loopback_supported := GetProcAddress(LDllHandle, 'ma_is_loopback_supported');
+  ma_job_init := GetProcAddress(LDllHandle, 'ma_job_init');
+  ma_job_process := GetProcAddress(LDllHandle, 'ma_job_process');
+  ma_job_queue_config_init := GetProcAddress(LDllHandle, 'ma_job_queue_config_init');
+  ma_job_queue_get_heap_size := GetProcAddress(LDllHandle, 'ma_job_queue_get_heap_size');
+  ma_job_queue_init := GetProcAddress(LDllHandle, 'ma_job_queue_init');
+  ma_job_queue_init_preallocated := GetProcAddress(LDllHandle, 'ma_job_queue_init_preallocated');
+  ma_job_queue_next := GetProcAddress(LDllHandle, 'ma_job_queue_next');
+  ma_job_queue_post := GetProcAddress(LDllHandle, 'ma_job_queue_post');
+  ma_job_queue_uninit := GetProcAddress(LDllHandle, 'ma_job_queue_uninit');
   ma_linear_resampler_config_init := GetProcAddress(LDllHandle, 'ma_linear_resampler_config_init');
   ma_linear_resampler_get_expected_output_frame_count := GetProcAddress(LDllHandle, 'ma_linear_resampler_get_expected_output_frame_count');
   ma_linear_resampler_get_heap_size := GetProcAddress(LDllHandle, 'ma_linear_resampler_get_heap_size');
@@ -10486,14 +10632,6 @@ begin
   ma_resource_manager_data_stream_uninit := GetProcAddress(LDllHandle, 'ma_resource_manager_data_stream_uninit');
   ma_resource_manager_get_log := GetProcAddress(LDllHandle, 'ma_resource_manager_get_log');
   ma_resource_manager_init := GetProcAddress(LDllHandle, 'ma_resource_manager_init');
-  ma_resource_manager_job_init := GetProcAddress(LDllHandle, 'ma_resource_manager_job_init');
-  ma_resource_manager_job_queue_config_init := GetProcAddress(LDllHandle, 'ma_resource_manager_job_queue_config_init');
-  ma_resource_manager_job_queue_get_heap_size := GetProcAddress(LDllHandle, 'ma_resource_manager_job_queue_get_heap_size');
-  ma_resource_manager_job_queue_init := GetProcAddress(LDllHandle, 'ma_resource_manager_job_queue_init');
-  ma_resource_manager_job_queue_init_preallocated := GetProcAddress(LDllHandle, 'ma_resource_manager_job_queue_init_preallocated');
-  ma_resource_manager_job_queue_next := GetProcAddress(LDllHandle, 'ma_resource_manager_job_queue_next');
-  ma_resource_manager_job_queue_post := GetProcAddress(LDllHandle, 'ma_resource_manager_job_queue_post');
-  ma_resource_manager_job_queue_uninit := GetProcAddress(LDllHandle, 'ma_resource_manager_job_queue_uninit');
   ma_resource_manager_next_job := GetProcAddress(LDllHandle, 'ma_resource_manager_next_job');
   ma_resource_manager_pipeline_notifications_init := GetProcAddress(LDllHandle, 'ma_resource_manager_pipeline_notifications_init');
   ma_resource_manager_post_job := GetProcAddress(LDllHandle, 'ma_resource_manager_post_job');
