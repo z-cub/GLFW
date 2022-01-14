@@ -22,6 +22,55 @@ Pascal bindings that allow you to use **GLFW** and other useful C libraries with
 ### Usage
 You simply add `GLFW` to your uses section and everything will be linked in your executable, ready for use with no DLLs to maintain. You will have direct access to all the aforementioned libraries.
 
+```Pascal
+uses
+  System.SysUtils,
+  GLFW,
+  GLFW.Glad;
+  
+begin
+  var Window: PGLFWwindow;
+
+  // Initialize the library
+  if glfwInit() = GLFW_FALSE then
+    Exit;
+
+  // Create a windowed mode window and its OpenGL context
+  Window := glfwCreateWindow(640, 480, 'Hello World', nil, nil);
+  if (Window = nil) then
+  begin
+    glfwTerminate;
+    Exit;
+  end;
+
+  // Make the window's context current
+  glfwMakeContextCurrent(Window);
+
+  // Load OpenGL
+  gladLoadGL(TLoadProc(glfwGetProcAddress));
+
+  // Loop until the user closes the window
+  while glfwWindowShouldClose(Window) = GLFW_FALSE do
+  begin
+    // Render here
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Clear window
+    glClearColor(1.0/30.0, 1.0/31.0, 1.0/30.0, 1.0/1.0);
+
+    // Swap front and back buffers
+    glfwSwapBuffers(Window);
+
+    // Poll for and process events
+    glfwPollEvents;
+  end;
+
+  glfwDestroyWindow(Window);
+
+  glfwTerminate;
+end.
+```
+
 ### Support
 - <a href="https://github.com/tinyBigGAMES/GLFW/issues" target="_blank">Issues</a>
 - <a href="https://github.com/tinyBigGAMES/GLFW/projects/1" target="_blank">Issue Tracking</a>
